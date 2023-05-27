@@ -25,8 +25,18 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0.5"
                 app:layout_constraintHorizontal_bias="0.5"/>
-        </androidx.constraintlayout.widget.ConstraintLayout>
 
+            <com.example.wastedetector.OverlayView
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintDimensionRatio="H,512:384"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.5"
+                app:layout_constraintHorizontal_bias="0.5"
+                android:id="@+id/overlay"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -37,6 +47,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="@dimen/_16sdp"
         android:src="@drawable/baseline_camera_24"
-        android:tint="@color/white"/>
+        android:tint="@color/white"
+        android:contentDescription="null" />
 
 </RelativeLayout>

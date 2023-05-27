@@ -5,21 +5,18 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.graphics.*
-import android.hardware.camera2.*
 import android.media.ExifInterface
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.util.Log
-import android.util.Size
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.RelativeLayout
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import com.yalantis.ucrop.UCrop
 import kotlinx.coroutines.Dispatchers
@@ -29,9 +26,7 @@ import org.tensorflow.lite.task.vision.detector.Detection
 import org.tensorflow.lite.task.vision.detector.ObjectDetector
 import java.io.File
 import java.io.FileOutputStream
-import java.io.IOException
 import java.io.InputStream
-import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
@@ -54,6 +49,7 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var defaultLayout: RelativeLayout
     private lateinit var resultView: ImageView
     private lateinit var imagePath: String
+    private lateinit var objectDetectorHelper: ObjectDetectorHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -151,7 +147,6 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
             setHideBottomControls(true)
             setFreeStyleCropEnabled(false)
             withAspectRatio(EXPECTED_WIDTH.toFloat(), EXPECTED_HEIGHT.toFloat())
-//            withMaxResultSize(EXPECTED_WIDTH, EXPECTED_HEIGHT)
         }
 
         UCrop.of(uri!!, destinationUri)
@@ -257,41 +252,37 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun runObjectDetection(bitmap: Bitmap) {
-        Log.e("target height", "height ${bitmap.height}")
-        Log.e("target height", "width ${bitmap.width}")
-//        Create a TensorImage object
-        val tensorImage = TensorImage.fromBitmap(bitmap)
+        objectDetectorHelper = ObjectDetectorHelper(
+            context = this,
+            objectDetectorListener = object : ObjectDetectorHelper.DetectorListener {
+                override fun onError(error: String) {
+                    runOnUiThread {
+                        Toast.makeText(this@ImageDetectionActivity, error, Toast.LENGTH_SHORT).show()
+                    }
+                }
 
-//        Initialize the detector object
-        val options = ObjectDetector.ObjectDetectorOptions.builder()
-            .setMaxResults(5)
-            .setScoreThreshold(0.5f)
-            .build()
-        val detector = ObjectDetector.createFromFileAndOptions(
-            this, // the application context
-            "model.tflite", // must be same as the filename in assets folder
-            options
+                override fun onResults(results: MutableList<Detection>?, imageHeight: Int, imageWidth: Int) {
+                    if (results != null) {
+                        debugPrint(results)
+                    }
+//                  Parse the detection result
+                    val displayResult = results?.map {
+                        val category = it.categories.first()
+                        val text = "${category.label}, ${category.score.times(100).toInt()}%"
+
+//                        Create a data obj to display the detection result
+                        DetectionResult(it.boundingBox, text)
+                    }
+
+//                  Draw bounding box, label and score on the bitmap and display
+                    val imgResult = drawDetectionResult(bitmap, displayResult!!)
+                    runOnUiThread {
+                        resultView.setImageBitmap(imgResult)
+                    }
+                }
+            }
         )
-
-//        Feed the image input to the model and get the detection result
-        val result = detector.detect(tensorImage)
-
-        debugPrint(result)
-
-//        Parse the detection result
-        val displayResult = result.map {
-            val category = it.categories.first()
-            val text = "${category.label}, ${category.score.times(100).toInt()}%"
-
-//            Create a data obj to display the detection result
-            DetectionResult(it.boundingBox, text)
-        }
-
-//        Draw bounding box, label and score on the bitmap and display
-        val imgResult = drawDetectionResult(bitmap, displayResult)
-        runOnUiThread {
-            resultView.setImageBitmap(imgResult)
-        }
+        objectDetectorHelper.detect(bitmap)
     }
 
     private fun debugPrint(results : List<Detection>) {
@@ -315,6 +306,8 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
         val pen = Paint()
         pen.textAlign = Paint.Align.LEFT
 
+        Log.e("test", "inside")
+
         result.forEach {
             // draw bounding box
             pen.color = Color.RED
@@ -322,7 +315,6 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
             pen.style = Paint.Style.STROKE
             val box = it.boundingBox
             canvas.drawRect(box, pen)
-
 
             val tagSize = Rect(0, 0, 0, 0)
 

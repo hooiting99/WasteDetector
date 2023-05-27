@@ -14,18 +14,22 @@ import androidx.camera.core.ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
+import com.example.wastedetector.databinding.ActivityCameraBinding
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import org.tensorflow.lite.task.vision.detector.Detection
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
-class CameraActivity : AppCompatActivity() {
+class CameraActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListener {
 
     companion object {
         private const val TAG = "CameraActivity"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
+        private const val REQUEST_CODE_PERMISSIONS = 20
+        private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
     }
 
     private lateinit var  previewView: PreviewView
@@ -33,14 +37,25 @@ class CameraActivity : AppCompatActivity() {
 
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
+    private lateinit var objectDetectorHelper: ObjectDetectorHelper
+    private lateinit var bitmapBuffer: Bitmap
     private var imageCapture: ImageCapture? = null
+    private var imageAnalyzer: ImageAnalysis? = null
+    private lateinit var activityCameraBinding: ActivityCameraBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_camera)
+        activityCameraBinding = ActivityCameraBinding.inflate(layoutInflater)
+        setContentView(activityCameraBinding.root)
 
-        previewView = findViewById(R.id.previewView)
-        captureBtn = findViewById(R.id.captureBtn)
+        val value = intent.getStringExtra("key")
+
+        objectDetectorHelper = ObjectDetectorHelper(
+            context = this,
+            objectDetectorListener = this)
+
+        previewView = activityCameraBinding.previewView
+        captureBtn = activityCameraBinding.captureBtn
 
         startCamera()
         outputDirectory = getOutputDirectory()
@@ -68,7 +83,6 @@ class CameraActivity : AppCompatActivity() {
             // Preview- using 4:3 ratio as it is the closest to the model
             val preview = Preview.Builder()
                 .setTargetAspectRatio(AspectRatio.RATIO_4_3)
-                .setTargetRotation(previewView.display.rotation)
                 .build()
                 .also {
                     it.setSurfaceProvider(previewView.surfaceProvider)
@@ -77,8 +91,30 @@ class CameraActivity : AppCompatActivity() {
             imageCapture = ImageCapture.Builder()
                 .setTargetResolution(Size(512,384))
                 .setCaptureMode(CAPTURE_MODE_MINIMIZE_LATENCY)
-                .setTargetRotation(previewView.display.rotation)
                 .build()
+
+            // ImageAnalysis. Using RGBA 8888 to match how our models work
+            imageAnalyzer =
+                ImageAnalysis.Builder()
+                    .setTargetAspectRatio(AspectRatio.RATIO_4_3)
+                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                    .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
+                    .build()
+                    // The analyzer can then be assigned to the instance
+                    .also {
+                        it.setAnalyzer(cameraExecutor) { image ->
+                            if (!::bitmapBuffer.isInitialized) {
+                                // The image rotation and RGB image buffer are initialized only once
+                                // the analyzer has started running
+                                bitmapBuffer = Bitmap.createBitmap(
+                                    image.width,
+                                    image.height,
+                                    Bitmap.Config.ARGB_8888
+                                )
+                            }
+                            detectObjects(image)
+                        }
+                    }
 
             // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
@@ -88,11 +124,19 @@ class CameraActivity : AppCompatActivity() {
                 cameraProvider.unbindAll()
                 // Bind use cases to camera
                 cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, imageCapture)
+                    this, cameraSelector, preview, imageCapture, imageAnalyzer)
             } catch (exc: Exception) {
                 Log.e(TAG, "Failed to start camera", exc)
             }
         }, ContextCompat.getMainExecutor(this))
+    }
+
+    private fun detectObjects(image: ImageProxy) {
+        // Copy out RGB bits to the shared bitmap buffer
+        image.use { bitmapBuffer.copyPixelsFromBuffer(image.planes[0].buffer) }
+
+        // Pass Bitmap and rotation to the object detector helper for processing and detection
+        objectDetectorHelper.detect(bitmapBuffer)
     }
 
     private fun takePicture() {
@@ -133,8 +177,34 @@ class CameraActivity : AppCompatActivity() {
             })
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+//    override fun onDestroy() {
+//        super.onDestroy()
+//        cameraExecutor.shutdown()
+//    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
         cameraExecutor.shutdown()
+        navigateBack()
+    }
+
+    private fun navigateBack() {
+        supportFragmentManager.popBackStack()
+    }
+
+    override fun onError(error: String) {
+        runOnUiThread {
+            Toast.makeText(this@CameraActivity, error, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onResults(results: MutableList<Detection>?, imageHeight: Int, imageWidth: Int) {
+        activityCameraBinding.overlay.setResults(
+            results ?: LinkedList<Detection>(),
+            imageHeight,
+            imageWidth
+        )
+
+        activityCameraBinding.overlay.invalidate()
     }
 }
