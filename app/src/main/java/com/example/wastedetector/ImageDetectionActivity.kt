@@ -49,11 +49,6 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
         private const val MAX_FONT_SIZE = 30F
     }
 
-    private val cameraManager: CameraManager by lazy {
-        getSystemService(Context.CAMERA_SERVICE) as CameraManager
-    }
-    private lateinit var cameraId: String
-
     private lateinit var captureImage: Button
     private lateinit var uploadImage: Button
     private lateinit var defaultLayout: RelativeLayout
@@ -77,7 +72,7 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
         when (v?.id) {
             R.id.captureImage -> {
                 try{
-                    dispatchTakePictureIntent()
+                    startTakePictureIntent()
                 }catch (e: ActivityNotFoundException) {
                     Log.e(TAG, e.message.toString())
                 }
@@ -98,11 +93,15 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
                 REQUEST_IMAGE_CAPTURE -> {
-                    handleImage(imagePath)
+                    val path = data?.getStringExtra("captureImage")
+                    if (path != null) {
+                        handleImage(path)
+                    }
                 }
                 REQUEST_UPLOAD_IMAGE -> {
                     val imageUri = data?.data
                     val path = getRealPathFromURI(imageUri, this)
+                    Log.e(TAG, imageUri.toString())
                     handleImage(path)
                 }
                 REQUEST_CROP_IMAGE -> {
@@ -114,45 +113,9 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    private fun dispatchTakePictureIntent() {
-        Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
-            // Ensure that there's a camera activity to handle the intent
-            takePictureIntent.resolveActivity(packageManager)?.also {
-                // Create the File where the capture image should go
-                val photoFile: File? = try {
-                    createImageFile()
-                } catch (e: IOException) {
-                    Log.e(TAG, e.message.toString())
-                    null
-                }
-                // Continue only if the File was successfully created
-                photoFile?.also {
-                    val photoURI: Uri = FileProvider.getUriForFile(
-                        this,
-                        "com.example.wastedetector.fileprovider",
-                        it
-                    )
-                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
-                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
-                }
-            }
-        }
-    }
-
-
-    @Throws(IOException::class)
-    private fun createImageFile(): File {
-//        Create an image file name
-        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-        val storageDir: File? = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        return File.createTempFile(
-            "JPEG_${timeStamp}_", /* prefix */
-            ".jpg", /* suffix */
-            storageDir /* directory */
-        ).apply {
-            // Save a file: path for use with ACTION_VIEW intents
-            imagePath = absolutePath
-        }
+    private fun startTakePictureIntent() {
+        val cameraIntent = Intent(this, CameraActivity::class.java)
+        startActivityForResult(cameraIntent, REQUEST_IMAGE_CAPTURE)
     }
 
     private fun handleImage(path: String) {
