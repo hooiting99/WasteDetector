@@ -1,5 +1,6 @@
 package com.example.wastedetector
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -33,6 +34,8 @@ class HomeFragment : Fragment() {
     }
 
     private fun showImageSourceDialog() {
+        val dialogBuilder = AlertDialog.Builder(requireContext())
+
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_layout, null)
         val dialog = BottomSheetDialog(requireContext())
         dialog.setContentView(dialogView)
@@ -65,7 +68,8 @@ class HomeFragment : Fragment() {
     }
 
     private fun navigateToCameraActivity() {
-        val intent = Intent(requireContext(), CameraDetectionActivity::class.java)
+        val intent = Intent(requireContext(), CameraActivity::class.java)
+        intent.putExtra("key", 100)
         startActivity(intent)
     }
 
