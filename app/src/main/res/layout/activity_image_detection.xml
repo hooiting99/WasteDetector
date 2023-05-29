@@ -4,35 +4,52 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ImageDetectionActivity">
+    tools:context=".ImageDetectionActivity"
+    android:background="?colorOnPrimary">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/topAppBar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:title="Image Detection"
+            app:titleCentered="true"
+            app:titleTextColor="?attr/colorPrimary"
+            android:background="?attr/colorPrimaryVariant"
+            app:navigationIcon="@drawable/baseline_clear_24"
+            app:navigationIconTint="?colorPrimary"
+            app:navigationContentDescription="Back to Home Page"/>
+    </com.google.android.material.appbar.AppBarLayout>
 
     <FrameLayout
-        android:id="@+id/buttonLayout"
+        android:id="@+id/resultLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:layout_marginLeft="@dimen/_15sdp"
         android:layout_marginTop="@dimen/_10sdp"
-        android:layout_marginRight="@dimen/_15sdp"
-        android:gravity="center_horizontal"
-        android:padding="@dimen/_10sdp">
+        android:gravity="center_horizontal">
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="@dimen/_250sdp"
-            android:layout_marginStart="@dimen/_10sdp"
+            android:layout_marginStart="@dimen/_30sdp"
             android:layout_marginTop="@dimen/_10sdp"
             android:layout_marginBottom="@dimen/_10sdp"
-            android:layout_marginEnd="@dimen/_10sdp"
+            android:layout_marginEnd="@dimen/_30sdp"
             android:background="@drawable/dashed_border"
             android:id="@+id/defaultImage">
+
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginTop="@dimen/_15sdp"
                 android:layout_marginBottom="@dimen/_15sdp"
                 android:src="@drawable/ic_gallery"
-                />
+                app:tint="#C8B2BAB2"
+                android:contentDescription="@string/upload_an_image_for_detection" />
         </RelativeLayout>
 
         <ImageView
@@ -41,23 +58,37 @@
             android:adjustViewBounds="true"
             android:scaleType="fitCenter"
             android:id="@+id/resultedImage"/>
-
     </FrameLayout>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/uploadImage"
+        style="?attr/materialButtonOutlinedStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
-        android:text="Upload Image" />
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="@dimen/_15sdp"
+        android:layout_marginBottom="@dimen/_15sdp"
+        android:text="@string/upload_image"
+        android:textColor="?attr/colorPrimary"
+        android:textSize="11sp"
+        app:cornerRadius="@dimen/_10sdp"
+        app:icon="@drawable/baseline_file_upload_24"
+        app:strokeColor="?attr/colorPrimary"/>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/captureImage"
+        style="?attr/materialButtonOutlinedStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:text="Capture Image" />
-
+        android:layout_marginEnd="@dimen/_15sdp"
+        android:layout_marginBottom="@dimen/_15sdp"
+        android:text="Capture Image"
+        android:textColor="?attr/colorPrimary"
+        android:textSize="11sp"
+        app:cornerRadius="@dimen/_10sdp"
+        app:icon="@drawable/add_photo_icon"
+        app:strokeColor="?attr/colorPrimary"/>
 </RelativeLayout>

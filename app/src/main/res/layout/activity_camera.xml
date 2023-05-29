@@ -4,7 +4,25 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".CameraActivity">
+    tools:context=".CameraActivity"
+    android:background="?colorOnPrimary">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/topAppBar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:title="Real Time Detection"
+            app:titleCentered="true"
+            app:titleTextColor="?attr/colorPrimary"
+            android:background="?attr/colorPrimaryVariant"
+            app:navigationIcon="@drawable/baseline_clear_24"
+            app:navigationIconTint="?colorPrimary"
+            app:navigationContentDescription="Back to Home Page"/>
+    </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
@@ -43,11 +61,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/captureBtn"
+        app:fabCustomSize="@dimen/_55sdp"
+        app:maxImageSize="@dimen/_30sdp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="@dimen/_16sdp"
-        android:src="@drawable/baseline_camera_24"
-        android:tint="@color/white"
+        android:src="@drawable/baseline_photo_camera_24"
+        app:tint="@color/green_dark"
+        android:backgroundTint="@color/white"
+        app:borderWidth="1dp"
         android:contentDescription="null" />
 
 </RelativeLayout>

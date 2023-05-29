@@ -4,9 +4,13 @@
         <shape android:shape="rectangle">
             <corners android:radius="10dp"/>
             <stroke android:width="2dp"
-                android:color="#C0C0C0"
+                android:color="#C8B2BAB2"
                 android:dashWidth="20dp"
                 android:dashGap="25dp"/>
+            <padding android:bottom="@dimen/_10sdp"
+                android:top="@dimen/_10sdp"
+                android:right="@dimen/_10sdp"
+                android:left="@dimen/_10sdp"/>
         </shape>
     </item>
 </selector>

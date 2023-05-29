@@ -1,5 +1,6 @@
 package com.example.wastedetector
 
+import android.app.ActionBar
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
@@ -17,7 +18,10 @@ import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.appbar.MaterialToolbar
 import com.yalantis.ucrop.UCrop
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,7 +39,7 @@ import kotlin.math.min
 class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
 
     companion object {
-        const val TAG = "TFLite - ODT"
+        const val TAG = "IMG_DETECT"
         const val REQUEST_IMAGE_CAPTURE: Int = 1
         const val REQUEST_UPLOAD_IMAGE: Int = 2
         const val REQUEST_CROP_IMAGE: Int = 3
@@ -48,6 +52,7 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var uploadImage: Button
     private lateinit var defaultLayout: RelativeLayout
     private lateinit var resultView: ImageView
+    private lateinit var topBar: MaterialToolbar
     private lateinit var imagePath: String
     private lateinit var objectDetectorHelper: ObjectDetectorHelper
 
@@ -59,22 +64,29 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
         resultView = findViewById(R.id.resultedImage)
         uploadImage = findViewById(R.id.uploadImage)
         captureImage = findViewById(R.id.captureImage)
+        topBar = findViewById(R.id.topAppBar)
 
         uploadImage.setOnClickListener(this)
         captureImage.setOnClickListener(this)
+
+        topBar.setNavigationOnClickListener {
+            onBackPressed() // Close and navigate back to Home
+        }
     }
 
+//    Handle the button click action
     override fun onClick(v: View?) {
         when (v?.id) {
             R.id.captureImage -> {
                 try{
-                    startTakePictureIntent()
+                    startTakePictureIntent() // Call the CameraX for capture image intent
                 }catch (e: ActivityNotFoundException) {
                     Log.e(TAG, e.message.toString())
                 }
             }
             R.id.uploadImage -> {
                 try {
+//                    Call the image picker intent
                     val uploadPictureIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
                     startActivityForResult(uploadPictureIntent, REQUEST_UPLOAD_IMAGE)
                 } catch (e: ActivityNotFoundException) {
@@ -109,11 +121,13 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+//    Start CameraX activity
     private fun startTakePictureIntent() {
         val cameraIntent = Intent(this, CameraActivity::class.java)
         startActivityForResult(cameraIntent, REQUEST_IMAGE_CAPTURE)
     }
 
+//    Pre-process, detect and display result for the image upload
     private fun handleImage(path: String) {
         val requireCrop = !isImageSizeValid(path)
         if (requireCrop) {
@@ -125,7 +139,7 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    //    Check if the size of image size valid
+//    Check if the size of image size match with training dataset used for model training
     private fun isImageSizeValid(uri: String): Boolean {
         val options = BitmapFactory.Options().apply {
             inJustDecodeBounds = true
@@ -138,7 +152,7 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
         return imageW <= EXPECTED_WIDTH && imageH <= EXPECTED_HEIGHT
     }
 
-//    Crop the Image to the expected size
+//    Allow user to crop the waste image for better detection result
     private fun cropImage(uri: Uri?) {
         val destinationUri = Uri.fromFile(File(cacheDir, "cropped_image.jpg"))
         val options = UCrop.Options().apply {
@@ -185,13 +199,10 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
         return file.path
     }
 
-    //    Scale the image to match the size of resultView
+//    Scale the image to match the size of resultView used for display
     private fun getFormattedImage(): Bitmap {
         val targetW: Int = resultView.width
         val targetH: Int = resultView.height
-
-        Log.e("target width", "width $targetW")
-        Log.e("target height", "height $targetH")
 
         val bmOptions = BitmapFactory.Options().apply {
             inJustDecodeBounds = true
@@ -200,9 +211,6 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
 
             val imageW: Int = outWidth
             val imageH: Int = outHeight
-
-            Log.e("target height", "height $imageH")
-            Log.e("target height", "width $imageW")
 
             val scaleFactor: Int = max(1, min(imageW / targetW, imageH / targetH))
 
@@ -244,6 +252,7 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
         )
     }
 
+//    Put the image into detection model, get and display the result
     private fun setViewAndDetect(bitmap: Bitmap) {
         resultView.setImageBitmap(bitmap)
         defaultLayout.visibility = View.INVISIBLE
@@ -251,7 +260,9 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
         lifecycleScope.launch(Dispatchers.Default) { runObjectDetection(bitmap) }
     }
 
+//    Perform object detection on the image
     private fun runObjectDetection(bitmap: Bitmap) {
+//        Initialize an object detector helper for detection
         objectDetectorHelper = ObjectDetectorHelper(
             context = this,
             objectDetectorListener = object : ObjectDetectorHelper.DetectorListener {
@@ -282,7 +293,7 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
                 }
             }
         )
-        objectDetectorHelper.detect(bitmap)
+        objectDetectorHelper.detect(bitmap) // Run waste detection
     }
 
     private fun debugPrint(results : List<Detection>) {
@@ -300,44 +311,56 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+//    Draw the detection results on the image
     private fun drawDetectionResult(bitmap: Bitmap, result: List<DetectionResult>): Bitmap {
+//        Initialize the canvas to draw the result on image
         val outputBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
         val canvas = Canvas(outputBitmap)
         val pen = Paint()
         pen.textAlign = Paint.Align.LEFT
 
-        Log.e("test", "inside")
-
+//        Draw the detection results: bounding box, text: category, confidence score
         result.forEach {
-            // draw bounding box
-            pen.color = Color.RED
+//            Set the style of bounding box
+            pen.color = Color.GREEN
             pen.strokeWidth = 4F
             pen.style = Paint.Style.STROKE
             val box = it.boundingBox
-            canvas.drawRect(box, pen)
+            canvas.drawRect(box, pen) // Draw the bounding box
 
+//            Set the style of text box
             val tagSize = Rect(0, 0, 0, 0)
-
-            // calculate the right font size
             pen.style = Paint.Style.FILL_AND_STROKE
-            pen.color = Color.BLACK
+            pen.color = Color.WHITE
             pen.strokeWidth = 1F
 
+//            Calculate the right font size
             pen.textSize = MAX_FONT_SIZE
             pen.getTextBounds(it.text, 0, it.text.length, tagSize)
             val fontSize: Float = pen.textSize * box.width() / tagSize.width()
 
-            // adjust the font size so texts are inside the bounding box
+//            Ensure text inside the bounding box
             if (fontSize < pen.textSize) pen.textSize = fontSize
 
-            var margin = (box.width() - tagSize.width()) / 2.0F
-            if (margin < 0F) margin = 0F
+//            Draw the text background
+            val textBackgroundPaint = Paint()
+            textBackgroundPaint.color = Color.BLACK
+            val backgroundRect = Rect(
+                box.left.toInt(),
+                box.top.toInt(),
+                (box.left + tagSize.width()).toInt(),
+                (box.top + tagSize.height()).toInt()
+            )
+            canvas.drawRect(backgroundRect, textBackgroundPaint)
+
+//            Draw the text
             canvas.drawText(
-                it.text, box.left + margin,
-                box.top + tagSize.height().times(1F), pen
+                it.text, box.left,
+                box.top + tagSize.height()-tagSize.bottom, pen
             )
         }
-        return outputBitmap
+
+        return outputBitmap // Resulted image
     }
 
     override fun onBackPressed() {

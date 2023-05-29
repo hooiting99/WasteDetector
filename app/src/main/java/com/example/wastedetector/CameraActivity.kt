@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.util.Size
+import android.view.View
 import android.widget.Toast
 import androidx.camera.core.*
 import androidx.camera.core.ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY
@@ -15,6 +16,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import com.example.wastedetector.databinding.ActivityCameraBinding
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import org.tensorflow.lite.task.vision.detector.Detection
 import java.io.File
@@ -34,6 +36,7 @@ class CameraActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListene
 
     private lateinit var  previewView: PreviewView
     private lateinit var captureBtn: FloatingActionButton
+    private lateinit var topBar: MaterialToolbar
 
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
@@ -48,7 +51,7 @@ class CameraActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListene
         activityCameraBinding = ActivityCameraBinding.inflate(layoutInflater)
         setContentView(activityCameraBinding.root)
 
-        val value = intent.getStringExtra("key")
+        val value = intent.getStringExtra("activity_type")
 
         objectDetectorHelper = ObjectDetectorHelper(
             context = this,
@@ -56,13 +59,21 @@ class CameraActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListene
 
         previewView = activityCameraBinding.previewView
         captureBtn = activityCameraBinding.captureBtn
+        topBar = activityCameraBinding.topAppBar
 
-        startCamera()
-        outputDirectory = getOutputDirectory()
         cameraExecutor = Executors.newSingleThreadExecutor()
+        startCamera(value)
+        if (value == "real_time") {
+            captureBtn.visibility = View.INVISIBLE
+        }else {
+            outputDirectory = getOutputDirectory()
+            captureBtn.setOnClickListener {
+                takePicture()
+            }
+        }
 
-        captureBtn.setOnClickListener {
-            takePicture()
+        topBar.setNavigationOnClickListener {
+            onBackPressed() // Close and navigate back to Home
         }
     }
 
@@ -74,7 +85,7 @@ class CameraActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListene
             mediaDir else filesDir
     }
 
-    private fun startCamera() {
+    private fun startCamera(value: String?) {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         cameraProviderFuture.addListener( {
             // Used to bind the lifecycle of cameras to the lifecycle owner
@@ -88,34 +99,6 @@ class CameraActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListene
                     it.setSurfaceProvider(previewView.surfaceProvider)
                 }
 
-            imageCapture = ImageCapture.Builder()
-                .setTargetResolution(Size(512,384))
-                .setCaptureMode(CAPTURE_MODE_MINIMIZE_LATENCY)
-                .build()
-
-            // ImageAnalysis. Using RGBA 8888 to match how our models work
-            imageAnalyzer =
-                ImageAnalysis.Builder()
-                    .setTargetAspectRatio(AspectRatio.RATIO_4_3)
-                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                    .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
-                    .build()
-                    // The analyzer can then be assigned to the instance
-                    .also {
-                        it.setAnalyzer(cameraExecutor) { image ->
-                            if (!::bitmapBuffer.isInitialized) {
-                                // The image rotation and RGB image buffer are initialized only once
-                                // the analyzer has started running
-                                bitmapBuffer = Bitmap.createBitmap(
-                                    image.width,
-                                    image.height,
-                                    Bitmap.Config.ARGB_8888
-                                )
-                            }
-                            detectObjects(image)
-                        }
-                    }
-
             // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
@@ -123,8 +106,39 @@ class CameraActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListene
                 // Unbind use cases before rebinding
                 cameraProvider.unbindAll()
                 // Bind use cases to camera
-                cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, imageCapture, imageAnalyzer)
+                if (value == "real_time") {
+                    // ImageAnalysis. Using RGBA 8888 to match how our models work
+                    imageAnalyzer =
+                        ImageAnalysis.Builder()
+                            .setTargetAspectRatio(AspectRatio.RATIO_4_3)
+                            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                            .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
+                            .build()
+                            // The analyzer can then be assigned to the instance
+                            .also {
+                                it.setAnalyzer(cameraExecutor) { image ->
+                                    if (!::bitmapBuffer.isInitialized) {
+                                        // The image rotation and RGB image buffer are initialized only once
+                                        // the analyzer has started running
+                                        bitmapBuffer = Bitmap.createBitmap(
+                                            image.width,
+                                            image.height,
+                                            Bitmap.Config.ARGB_8888
+                                        )
+                                    }
+                                    detectObjects(image)
+                                }
+                            }
+                    cameraProvider.bindToLifecycle(
+                        this, cameraSelector, preview, imageAnalyzer)
+                } else {
+                    imageCapture = ImageCapture.Builder()
+                        .setTargetResolution(Size(512,384))
+                        .setCaptureMode(CAPTURE_MODE_MINIMIZE_LATENCY)
+                        .build()
+                    cameraProvider.bindToLifecycle(
+                        this, cameraSelector, preview, imageCapture)
+                }
             } catch (exc: Exception) {
                 Log.e(TAG, "Failed to start camera", exc)
             }
@@ -176,11 +190,6 @@ class CameraActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListene
                 }
             })
     }
-
-//    override fun onDestroy() {
-//        super.onDestroy()
-//        cameraExecutor.shutdown()
-//    }
 
     override fun onBackPressed() {
         super.onBackPressed()

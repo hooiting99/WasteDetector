@@ -2,13 +2,14 @@ package com.example.wastedetector
 
 import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.LinearLayout
+import android.view.WindowManager
+import android.widget.*
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomsheet.BottomSheetDialog
 
@@ -16,7 +17,7 @@ class HomeFragment : Fragment() {
     private lateinit var detectBtn: Button
     private lateinit var cameraOption: LinearLayout
     private lateinit var imageOption: LinearLayout
-    private lateinit var cancelBtn: ImageView
+    private lateinit var cancelBtn: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -33,33 +34,58 @@ class HomeFragment : Fragment() {
         return view
     }
 
+//    private fun showImageSourceDialog() {
+//        val options = arrayOf("Camera", "Image")
+//        val builder = AlertDialog.Builder(requireContext())
+//        builder.setTitle("Choose Detection Option")
+//            .setItems(options) { dialog, which ->
+//                when (which) {
+//                    0 -> {
+//                        // Camera option selected
+//                        navigateToCameraActivity()
+//                    }
+//                    1 -> {
+//                        // Image option selected
+//                        navigateToImageActivity()
+//                    }
+//                }
+//                dialog.dismiss()
+//            }
+//            .setNegativeButton("Cancel") { dialog, _ ->
+//                dialog.dismiss()
+//            }.setI
+//        builder.create().show()
+//    }
+
+
     private fun showImageSourceDialog() {
-        val dialogBuilder = AlertDialog.Builder(requireContext())
-
+        val dialogBuilder = AlertDialog.Builder(requireContext()).create()
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_layout, null)
-        val dialog = BottomSheetDialog(requireContext())
-        dialog.setContentView(dialogView)
+        dialogBuilder.apply {
+            window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            window?.setLayout(100, WindowManager.LayoutParams.WRAP_CONTENT)
+            setView(dialogView)
+            setCancelable(false)
+        }.show()
 
-        cameraOption = dialog.findViewById(R.id.cameraOption)!!
-        imageOption = dialog.findViewById(R.id.imageOption)!!
-        cancelBtn = dialog.findViewById(R.id.cancelButton)!!
+        cameraOption = dialogView.findViewById(R.id.cameraOption)!!
+        imageOption = dialogView.findViewById(R.id.imageOption)!!
+        cancelBtn = dialogView.findViewById(R.id.cancelButton)!!
 
         // Set icons and click listeners for the buttons
         cameraOption.setOnClickListener {
             navigateToCameraActivity()
-            dialog.dismiss()
+            dialogBuilder.dismiss()
         }
 
         imageOption.setOnClickListener {
             navigateToImageActivity()
-            dialog.dismiss()
+            dialogBuilder.dismiss()
         }
 
         cancelBtn.setOnClickListener{
-            dialog.dismiss()
+            dialogBuilder.dismiss()
         }
-
-        dialog.show()
     }
 
     private fun navigateToImageActivity() {
@@ -69,7 +95,7 @@ class HomeFragment : Fragment() {
 
     private fun navigateToCameraActivity() {
         val intent = Intent(requireContext(), CameraActivity::class.java)
-        intent.putExtra("key", 100)
+        intent.putExtra("activity_type", "real_time")
         startActivity(intent)
     }
 
