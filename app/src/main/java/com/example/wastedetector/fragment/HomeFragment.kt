@@ -1,4 +1,4 @@
-package com.example.wastedetector
+package com.example.wastedetector.fragment
 
 import android.app.AlertDialog
 import android.content.Intent
@@ -11,7 +11,9 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.*
 import androidx.fragment.app.Fragment
-import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.example.wastedetector.CameraActivity
+import com.example.wastedetector.ImageDetectionActivity
+import com.example.wastedetector.R
 
 class HomeFragment : Fragment() {
     private lateinit var detectBtn: Button

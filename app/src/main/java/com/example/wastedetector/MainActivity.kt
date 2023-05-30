@@ -8,6 +8,9 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import com.example.wastedetector.fragment.HomeFragment
+import com.example.wastedetector.fragment.ProfileFragment
+import com.example.wastedetector.fragment.SummaryFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {

@@ -16,4 +16,6 @@
     <color name="text_color">#6AFFF7</color>
     <color name="dark_color">#092215</color>
     <color name="light_color">#F9F7E8</color>
+    <color name="light_hint_color">#B2014201</color>
+    <color name="dark_hint_color">#B2EAE8D7</color>
 </resources>

@@ -17,7 +17,13 @@
         android:theme="@style/Theme.WasteDetector"
         tools:targetApi="31">
         <activity
-            android:name=".LoginActivity"
+            android:name=".login.RegisterActivity"
+            android:exported="false" />
+        <activity
+            android:name=".login.LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".login.WelcomeScreen"
             android:exported="false" />
         <activity
             android:name=".SplashScreen"
@@ -37,10 +43,10 @@
             android:exported="false" />
         <activity
             android:name=".MainActivity"
-            android:exported="false"></activity>
+            android:exported="false" />
         <activity
             android:name="com.yalantis.ucrop.UCropActivity"
-            android:screenOrientation="portrait"
+            android:screenOrientation="fullSensor"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
     </application>
 

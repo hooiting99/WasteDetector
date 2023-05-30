@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".login.WelcomeScreen"
+    android:background="?colorOnPrimary">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/login_bg"
+        android:id="@+id/loginBackground"/>
+
+    <ImageView
+        android:layout_width="@dimen/_200sdp"
+        android:layout_height="@dimen/_45sdp"
+        android:src="@drawable/app_name"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginTop="@dimen/_48sdp"
+        android:layout_marginStart="@dimen/_25sdp"
+        app:tint="?colorOnSecondary"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="@dimen/_310sdp"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="JOIN US"
+            android:textSize="@dimen/_25ssp"
+            android:textColor="?colorOnSecondary"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Let's work together to make a difference, one waste at a time."
+            android:textSize="@dimen/_10ssp"
+            android:textColor="?colorOnSecondary"
+            android:textAlignment="center"
+            android:layout_marginTop="@dimen/_5sdp"
+            android:layout_marginStart="@dimen/_10sdp"
+            android:layout_marginEnd="@dimen/_10sdp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="@dimen/_200sdp"
+            android:layout_height="@dimen/_50sdp"
+            android:layout_marginTop="@dimen/_25sdp"
+            android:text="Sign Up"
+            android:textSize="20sp"
+            app:cornerRadius="@dimen/_15sdp"
+            android:shadowColor="@color/light_color"
+            android:backgroundTint="?colorOnSecondary"
+            android:id="@+id/registerBtn"
+            android:onClick="onRegisterButtonClick"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="@dimen/_200sdp"
+            android:layout_height="@dimen/_50sdp"
+            style="?attr/materialButtonOutlinedStyle"
+            android:text="@string/login"
+            android:textSize="20sp"
+            android:textColor="?colorOnSecondary"
+            app:cornerRadius="@dimen/_15sdp"
+            android:id="@+id/loginBtn"
+            app:strokeColor="?colorOnSecondary"
+            android:onClick="onLoginButtonClick"/>
+    </LinearLayout>
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

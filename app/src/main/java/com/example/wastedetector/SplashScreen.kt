@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
+import com.example.wastedetector.login.WelcomeScreen
 
 class SplashScreen : AppCompatActivity() {
     companion object {
@@ -15,7 +16,7 @@ class SplashScreen : AppCompatActivity() {
         setContentView(R.layout.activity_splash_screen)
 
         Handler().postDelayed({
-            val intent = Intent(this, MainActivity::class.java)
+            val intent = Intent(this, WelcomeScreen::class.java)
             startActivity(intent)
             finish() // Close the splash activity so it's not accessible from back stack
         }, SPLASH_DELAY)

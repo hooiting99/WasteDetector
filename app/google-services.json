@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "535856393571",
+    "project_id": "wastedetector-5d531",
+    "storage_bucket": "wastedetector-5d531.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:535856393571:android:8b6beb5c6f4e03c7223756",
+        "android_client_info": {
+          "package_name": "com.example.wastedetector"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDwJhgc_1CfiLCCxdhCRxIQ44s9eCQ6zts"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

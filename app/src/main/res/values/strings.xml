@@ -7,4 +7,12 @@
     <string name="cancel">Cancel</string>
     <string name="upload_an_image_for_detection">Upload an image for detection</string>
     <string name="upload_image">Upload Image</string>
+    <string name="password">******</string>
+    <string name="register">Register</string>
+    <string name="create_your_account">Create your account</string>
+    <string name="username">Username</string>
+    <string name="email">Email</string>
+    <string name="login">Login</string>
+    <string name="login_to_your_account">Login to your account</string>
+    <string name="welcome_back">Welcome Back</string>
 </resources>
