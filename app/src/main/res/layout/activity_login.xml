@@ -56,7 +56,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/description"
-        android:id="@+id/inputEmail"/>
+        android:id="@+id/loginEmail"/>
 
     <EditText
         android:layout_width="0dp"
@@ -74,11 +74,11 @@
         android:paddingBottom="@dimen/_10sdp"
         android:textColor="?colorOnSecondary"
         android:textColorHint="?colorOnSecondary"
-        app:layout_constraintEnd_toEndOf="@+id/inputEmail"
+        app:layout_constraintEnd_toEndOf="@+id/loginEmail"
         app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="@+id/inputEmail"
-        app:layout_constraintTop_toBottomOf="@+id/inputEmail"
-        android:id="@+id/inputPassword"/>
+        app:layout_constraintStart_toStartOf="@+id/loginEmail"
+        app:layout_constraintTop_toBottomOf="@+id/loginEmail"
+        android:id="@+id/loginPassword"/>
 
 
     <TextView
@@ -89,8 +89,8 @@
         android:textColor="?colorOnSecondary"
         android:textSize="@dimen/_12ssp"
         android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="@+id/inputPassword"
-        app:layout_constraintTop_toBottomOf="@+id/inputPassword"
+        app:layout_constraintEnd_toEndOf="@+id/loginPassword"
+        app:layout_constraintTop_toBottomOf="@+id/loginPassword"
         android:id="@+id/forgotPassword"/>
 
     <Button
@@ -102,8 +102,8 @@
         app:cornerRadius="@dimen/_15sdp"
         android:shadowColor="@color/light_color"
         android:backgroundTint="?colorOnSecondary"
-        app:layout_constraintEnd_toEndOf="@+id/inputPassword"
-        app:layout_constraintStart_toStartOf="@+id/inputPassword"
+        app:layout_constraintEnd_toEndOf="@+id/loginPassword"
+        app:layout_constraintStart_toStartOf="@+id/loginPassword"
         app:layout_constraintTop_toBottomOf="@+id/forgotPassword"
         android:id="@+id/btnLogin"/>
 

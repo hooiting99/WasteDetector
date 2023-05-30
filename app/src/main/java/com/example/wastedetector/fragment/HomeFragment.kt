@@ -36,30 +36,6 @@ class HomeFragment : Fragment() {
         return view
     }
 
-//    private fun showImageSourceDialog() {
-//        val options = arrayOf("Camera", "Image")
-//        val builder = AlertDialog.Builder(requireContext())
-//        builder.setTitle("Choose Detection Option")
-//            .setItems(options) { dialog, which ->
-//                when (which) {
-//                    0 -> {
-//                        // Camera option selected
-//                        navigateToCameraActivity()
-//                    }
-//                    1 -> {
-//                        // Image option selected
-//                        navigateToImageActivity()
-//                    }
-//                }
-//                dialog.dismiss()
-//            }
-//            .setNegativeButton("Cancel") { dialog, _ ->
-//                dialog.dismiss()
-//            }.setI
-//        builder.create().show()
-//    }
-
-
     private fun showImageSourceDialog() {
         val dialogBuilder = AlertDialog.Builder(requireContext()).create()
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_layout, null)
