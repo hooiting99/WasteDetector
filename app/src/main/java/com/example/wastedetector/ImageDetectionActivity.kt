@@ -1,6 +1,5 @@
 package com.example.wastedetector
 
-import android.app.ActionBar
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
@@ -13,25 +12,17 @@ import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.util.Log
 import android.view.View
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.RelativeLayout
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.MaterialToolbar
 import com.yalantis.ucrop.UCrop
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.task.vision.detector.Detection
-import org.tensorflow.lite.task.vision.detector.ObjectDetector
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
-import java.util.*
 import kotlin.math.max
 import kotlin.math.min
 
@@ -52,6 +43,9 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var uploadImage: Button
     private lateinit var defaultLayout: RelativeLayout
     private lateinit var resultView: ImageView
+    private lateinit var categoryView: TextView
+    private lateinit var descriptionView: TextView
+    private lateinit var recycleBtn: Button
     private lateinit var topBar: MaterialToolbar
     private lateinit var imagePath: String
     private lateinit var objectDetectorHelper: ObjectDetectorHelper
@@ -62,12 +56,16 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
 
         defaultLayout = findViewById(R.id.defaultImage)
         resultView = findViewById(R.id.resultedImage)
+        categoryView = findViewById(R.id.resultCategory)
+        descriptionView = findViewById(R.id.resultDescription)
         uploadImage = findViewById(R.id.uploadImage)
         captureImage = findViewById(R.id.captureImage)
+        recycleBtn = findViewById(R.id.recycle)
         topBar = findViewById(R.id.topAppBar)
 
         uploadImage.setOnClickListener(this)
         captureImage.setOnClickListener(this)
+        recycleBtn.setOnClickListener(this)
 
         topBar.setNavigationOnClickListener {
             onBackPressed() // Close and navigate back to Home
@@ -93,7 +91,16 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
                     Log.e(TAG, e.message.toString())
                 }
             }
+            R.id.recycle -> {
+                saveDetectionResult()
+            }
         }
+    }
+
+    private fun saveDetectionResult() {
+        recycleBtn.visibility = View.INVISIBLE
+        uploadImage.visibility = View.VISIBLE
+        captureImage.visibility = View.VISIBLE
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -256,6 +263,9 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
     private fun setViewAndDetect(bitmap: Bitmap) {
         resultView.setImageBitmap(bitmap)
         defaultLayout.visibility = View.INVISIBLE
+        uploadImage.visibility = View.INVISIBLE
+        captureImage.visibility = View.INVISIBLE
+        recycleBtn.visibility = View.VISIBLE
 
         lifecycleScope.launch(Dispatchers.Default) { runObjectDetection(bitmap) }
     }
@@ -273,9 +283,7 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
                 }
 
                 override fun onResults(results: MutableList<Detection>?, imageHeight: Int, imageWidth: Int) {
-                    if (results != null) {
-                        debugPrint(results)
-                    }
+                    debugPrint(results!!) // Print the results for checking
 //                  Parse the detection result
                     val displayResult = results?.map {
                         val category = it.categories.first()
@@ -285,10 +293,66 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
                         DetectionResult(it.boundingBox, text)
                     }
 
+                    val categories = HashSet<String>()
+                    val cate = StringBuilder()
+                    val method = StringBuilder()
+
+                    for (result in results) {
+                        val category = result.categories.first()
+                        val label = category.label
+
+                        if (!categories.contains(label)) {
+                            categories.add(label)
+                            when (label.trim()) {
+                                "cardboard" -> {
+                                    cate.append("Cardboard (Recyclable)\n")
+                                    method.append("Cardboard is recyclable and has a lower environmental impact " +
+                                            "compared to other packaging materials." +
+                                            "Recycling cardboard saves energy and reduces carbon emissions. " +
+                                            "Flatten and remove non-recyclable elements, then place it in recycling bins or facilities.\n")
+                                }
+                                "glass" -> {
+                                    cate.append("Glass (Recyclable)\n")
+                                    method.append("Glass is endlessly recyclable and has a low carbon footprint when recycled. " +
+                                            "To recycle glass, separate it by color (clear, green, brown), " +
+                                            "remove any non-recyclable elements like metal caps, and place it in designated recycling bins.")
+                                }
+                                "metal" -> {
+                                    cate.append("Metal (Recyclable)\n")
+                                    method.append("Metal recycling helps conserve natural resources and significantly reduces " +
+                                            "carbon emissions compared to primary metal production." +
+                                            "You can repurpose the metal items for creative DIY projects or functional use.")
+                                }
+                                "plastic" -> {
+                                    cate.append("Plastic (Recyclable)\n")
+                                    method.append("Plastics' production involves fossil fuel extraction, " +
+                                            "releasing greenhouse gases. Improper disposal leads to more emissions." +
+                                            "To recycle plastic, clean and sort them properly and rinsing out any residue. " +
+                                            "Then, deposit them in designated recycling bins or take them to local recycling centers.")
+                                }
+                                "paper" -> {
+                                    cate.append("Paper (Recyclable)\n")
+                                    method.append("Recycling paper is an eco-friendly choice that helps reduce deforestation and " +
+                                            "the carbon emissions associated with paper production. " +
+                                            "By separating paper waste and placing it in designated recycling bins or centers, " +
+                                            "you can contribute to the conservation of trees and energy resources.")
+                                }
+                                "trash" -> {
+                                    cate.append("Trash (Non-Recyclable)\n")
+                                    method.append("Items that cannot be recycled and belong in the trash contribute to carbon emissions when disposed of improperly." +
+                                            "Dispose of non-recyclable items in designated trash bins or follow local waste management guidelines " +
+                                            "to promote a cleaner and more sustainable environment.")
+                                }
+                            }
+                        }
+                    }
+
 //                  Draw bounding box, label and score on the bitmap and display
                     val imgResult = drawDetectionResult(bitmap, displayResult!!)
                     runOnUiThread {
                         resultView.setImageBitmap(imgResult)
+                        categoryView.text = cate.toString()
+                        descriptionView.text = method.toString()
                     }
                 }
             }
@@ -322,7 +386,11 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
 //        Draw the detection results: bounding box, text: category, confidence score
         result.forEach {
 //            Set the style of bounding box
-            pen.color = Color.GREEN
+            if (it.text.contains("trash")){
+                pen.color = Color.RED
+            }else {
+                pen.color = Color.GREEN
+            }
             pen.strokeWidth = 4F
             pen.style = Paint.Style.STROKE
             val box = it.boundingBox

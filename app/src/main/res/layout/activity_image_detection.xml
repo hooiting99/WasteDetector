@@ -25,7 +25,6 @@
     </com.google.android.material.appbar.AppBarLayout>
 
     <FrameLayout
-        android:id="@+id/resultLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
@@ -51,14 +50,48 @@
                 app:tint="#C8B2BAB2"
                 android:contentDescription="@string/upload_an_image_for_detection" />
         </RelativeLayout>
+    </FrameLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="?attr/actionBarSize"
+        android:layout_above="@+id/uploadImage">
 
         <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
             android:adjustViewBounds="true"
             android:scaleType="fitCenter"
+            android:layout_marginTop="@dimen/_40sdp"
+            app:layout_constraintDimensionRatio="H,512:384"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             android:id="@+id/resultedImage"/>
-    </FrameLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="@dimen/_20sdp"
+            android:paddingTop="@dimen/_30sdp"
+            android:textSize="@dimen/_16sdp"
+            android:textStyle="bold"
+            android:textColor="?colorOnSecondary"
+            app:layout_constraintTop_toBottomOf="@+id/resultedImage"
+            android:id="@+id/resultCategory"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="@dimen/_30sdp"
+            android:paddingEnd="@dimen/_30sdp"
+            android:textSize="@dimen/_11ssp"
+            android:textColor="?colorOnSecondary"
+            app:layout_constraintTop_toBottomOf="@+id/resultCategory"
+            android:id="@+id/resultDescription"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/uploadImage"
@@ -91,4 +124,19 @@
         app:cornerRadius="@dimen/_10sdp"
         app:icon="@drawable/add_photo_icon"
         app:strokeColor="?attr/colorPrimary"/>
+
+    <com.google.android.material.button.MaterialButton
+        style="?attr/materialButtonOutlinedStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/_20sdp"
+        android:text="Recycle it!"
+        android:textColor="?attr/colorPrimary"
+        android:textSize="11sp"
+        app:cornerRadius="@dimen/_10sdp"
+        app:strokeColor="?attr/colorPrimary"
+        android:visibility="invisible"
+        android:id="@+id/recycle"/>
 </RelativeLayout>

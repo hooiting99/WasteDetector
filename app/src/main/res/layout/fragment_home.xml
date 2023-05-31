@@ -6,21 +6,35 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".fragment.HomeFragment">
 
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:title="@string/app_name"
+            app:titleTextColor="?attr/colorPrimary"
+            android:background="?attr/colorPrimaryVariant"
+            app:titleCentered="true"/>
+    </com.google.android.material.appbar.AppBarLayout>
+
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:src="@drawable/home_background"
-        android:scaleType="fitStart" />
+        android:scaleType="fitStart"
+        android:layout_marginTop="?attr/actionBarSize"/>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/startDetect"
         style="?attr/materialButtonOutlinedStyle"
-        android:layout_width="@dimen/_240sdp"
+        android:layout_width="@dimen/_220sdp"
         android:layout_height="@dimen/_60sdp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="150dp"
-        android:text="Start Detection"
+        android:text="@string/start_detection"
         android:textColor="?attr/colorPrimary"
         android:textSize="20sp"
         app:cornerRadius="@dimen/_15sdp"
