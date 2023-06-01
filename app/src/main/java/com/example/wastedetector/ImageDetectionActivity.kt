@@ -5,29 +5,44 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.graphics.*
+import android.graphics.drawable.BitmapDrawable
 import android.media.ExifInterface
+import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.view.View.*
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.drawable.toDrawable
+import androidx.core.graphics.toColor
 import androidx.lifecycle.lifecycleScope
+import cn.pedant.SweetAlert.SweetAlertDialog
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.ktx.storage
 import com.yalantis.ucrop.UCrop
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.tensorflow.lite.task.vision.detector.Detection
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
+import java.util.*
 import kotlin.math.max
 import kotlin.math.min
 
 
-class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
+class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
 
     companion object {
         const val TAG = "IMG_DETECT"
@@ -49,6 +64,9 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var topBar: MaterialToolbar
     private lateinit var imagePath: String
     private lateinit var objectDetectorHelper: ObjectDetectorHelper
+    private lateinit var auth: FirebaseAuth
+    private lateinit var storage: FirebaseStorage
+    private lateinit var db: FirebaseFirestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,9 +83,13 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
 
         uploadImage.setOnClickListener(this)
         captureImage.setOnClickListener(this)
-        recycleBtn.setOnClickListener(this)
+
+        auth = Firebase.auth
+        storage = Firebase.storage
+        db = FirebaseFirestore.getInstance()
 
         topBar.setNavigationOnClickListener {
+            @Suppress("DEPRECATION")
             onBackPressed() // Close and navigate back to Home
         }
     }
@@ -86,23 +108,18 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
                 try {
 //                    Call the image picker intent
                     val uploadPictureIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                    @Suppress("DEPRECATION")
                     startActivityForResult(uploadPictureIntent, REQUEST_UPLOAD_IMAGE)
                 } catch (e: ActivityNotFoundException) {
                     Log.e(TAG, e.message.toString())
                 }
             }
-            R.id.recycle -> {
-                saveDetectionResult()
-            }
         }
     }
 
-    private fun saveDetectionResult() {
-        recycleBtn.visibility = View.INVISIBLE
-        uploadImage.visibility = View.VISIBLE
-        captureImage.visibility = View.VISIBLE
-    }
 
+
+    @Suppress("DEPRECATION")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK) {
@@ -129,6 +146,7 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
     }
 
 //    Start CameraX activity
+    @Suppress("DEPRECATION")
     private fun startTakePictureIntent() {
         val cameraIntent = Intent(this, CameraActivity::class.java)
         startActivityForResult(cameraIntent, REQUEST_IMAGE_CAPTURE)
@@ -262,10 +280,10 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
 //    Put the image into detection model, get and display the result
     private fun setViewAndDetect(bitmap: Bitmap) {
         resultView.setImageBitmap(bitmap)
-        defaultLayout.visibility = View.INVISIBLE
-        uploadImage.visibility = View.INVISIBLE
-        captureImage.visibility = View.INVISIBLE
-        recycleBtn.visibility = View.VISIBLE
+        defaultLayout.visibility = INVISIBLE
+        uploadImage.visibility = INVISIBLE
+        captureImage.visibility = INVISIBLE
+        recycleBtn.visibility = VISIBLE
 
         lifecycleScope.launch(Dispatchers.Default) { runObjectDetection(bitmap) }
     }
@@ -285,11 +303,11 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
                 override fun onResults(results: MutableList<Detection>?, imageHeight: Int, imageWidth: Int) {
                     debugPrint(results!!) // Print the results for checking
 //                  Parse the detection result
-                    val displayResult = results?.map {
+                    val displayResult = results.map {
                         val category = it.categories.first()
                         val text = "${category.label}, ${category.score.times(100).toInt()}%"
 
-//                        Create a data obj to display the detection result
+                //                        Create a data obj to display the detection result
                         DetectionResult(it.boundingBox, text)
                     }
 
@@ -348,11 +366,13 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
                     }
 
 //                  Draw bounding box, label and score on the bitmap and display
-                    val imgResult = drawDetectionResult(bitmap, displayResult!!)
+                    val imgResult = drawDetectionResult(bitmap, displayResult)
                     runOnUiThread {
                         resultView.setImageBitmap(imgResult)
                         categoryView.text = cate.toString()
                         descriptionView.text = method.toString()
+
+                        recycleBtn.setOnClickListener { saveDetectionResult(categories) }
                     }
                 }
             }
@@ -431,6 +451,98 @@ class ImageDetectionActivity : AppCompatActivity(), View.OnClickListener {
         return outputBitmap // Resulted image
     }
 
+//    Save the result into Firebase Storage
+    private fun saveDetectionResult(categories: HashSet<String>) {
+
+        // Inflate the custom layout for dialog
+        val customView = LayoutInflater.from(this).inflate(R.layout.dialog_custom_layout, null)
+        // Find the TextView in the custom layout
+        val contentTextView = customView.findViewById<TextView>(R.id.contentTextView)
+        val btn = customView.findViewById<Button>(R.id.customBtn)
+        val dialog = SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE)
+            .setCustomView(customView)
+            .setTitleText("Loading")
+            .hideConfirmButton()
+            .also {
+                it.setCancelable(false)
+                it.setCanceledOnTouchOutside(false)
+            }
+
+//        Get the image display on the resultView
+        val storeBitmap = (resultView.drawable as BitmapDrawable).bitmap
+
+        val outStream = ByteArrayOutputStream()
+        storeBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outStream)
+        val imageBytes = outStream.toByteArray()
+
+//        Store the image bytes to Firebase Storage
+        val userId = auth.currentUser?.uid
+        val storageRef = storage.reference
+        val imageRef = storageRef.child("users/$userId/images/${System.currentTimeMillis()}.jpg")
+
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkInfo = connectivityManager.activeNetworkInfo
+
+        if (networkInfo == null || !networkInfo.isConnected) {
+            // Network is unavailable
+            dialog.changeAlertType(SweetAlertDialog.ERROR_TYPE)
+            dialog.titleText = "Network Unavailable"
+            contentTextView.text = "Please check your internet connection."
+            btn.visibility = VISIBLE
+        } else {
+            val uploadTask = imageRef.putBytes(imageBytes)
+            uploadTask.addOnSuccessListener { taskSnapshot ->
+//            Retrieve the image URL when upload successful
+                val downloadUrl = taskSnapshot.metadata?.reference?.downloadUrl?.toString()
+
+//            Store the detection result into Firestore based on appropriate category
+                for (category in categories) {
+                    val detectionResultRef = db.collection("users").document(userId.toString()).collection(category)
+                    val currentDate = taskSnapshot.metadata?.creationTimeMillis
+                    val detectionResultData = hashMapOf(
+                        "imageUrl" to downloadUrl,
+                        "date" to currentDate,
+                    )
+
+                    detectionResultRef
+                        .add(detectionResultData)
+                        .addOnSuccessListener { documentReference ->
+                            Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.id)
+                            dialog.changeAlertType(SweetAlertDialog.SUCCESS_TYPE)
+                            dialog.titleText = "Congratulations!"
+                            contentTextView.text = "You have earned a reward!"
+                            btn.visibility = VISIBLE
+                            recycleBtn.visibility = INVISIBLE
+                            uploadImage.visibility = VISIBLE
+                            captureImage.visibility = VISIBLE
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w(TAG, "Error adding document", e)
+                            dialog.changeAlertType(SweetAlertDialog.ERROR_TYPE)
+                            dialog.titleText = "Opps..."
+                            contentTextView.text = "Something went wrong! Try Again!"
+                            btn.visibility = VISIBLE
+                        }
+                }
+            }.addOnFailureListener { e ->
+                // Image upload failed
+                // Display an error message or handle the failure case
+                Log.w(TAG, "Error adding document", e)
+                dialog.changeAlertType(SweetAlertDialog.ERROR_TYPE)
+                dialog.titleText = "Opps..."
+                contentTextView.text = "Something went wrong! Try Again!"
+                btn.visibility = VISIBLE
+            }
+        }
+
+        customView.findViewById<Button>(R.id.customBtn).setOnClickListener {
+            dialog.dismissWithAnimation()
+        }
+        dialog.show()
+    }
+
+    @Suppress("DEPRECATION")
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         super.onBackPressed()
         navigateBack()
