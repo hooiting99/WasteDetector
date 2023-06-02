@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/_100sdp"
+    android:layout_marginTop="@dimen/_10sdp"
+    android:layout_marginBottom="@dimen/_10sdp"
+    android:layout_marginStart="@dimen/_20sdp"
+    android:layout_marginEnd="@dimen/_20sdp"
+    app:cardBackgroundColor="?cardBackgroundColor"
+    app:cardCornerRadius="@dimen/_10sdp"
+    app:cardElevation="6dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:layout_gravity="center"
+        android:padding="@dimen/_10sdp">
+
+        <ImageView
+            android:layout_width="@dimen/_50sdp"
+            android:layout_height="@dimen/_80sdp"
+            android:layout_marginStart="@dimen/_5sdp"
+            android:src="@drawable/paper"
+            android:scaleType="centerCrop"
+            android:id="@+id/categoryImageView"/>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:padding="@dimen/_5sdp"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Category"
+                android:textAlignment="center"
+                android:textSize="@dimen/_16ssp"
+                android:textColor="?colorOnSecondary"
+                android:id="@+id/categoryTextView"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:textAlignment="center"
+                android:id="@+id/missionProgress"/>
+
+            <com.skydoves.progressview.ProgressView
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_14sdp"
+                android:padding="@dimen/_1sdp"
+                android:layout_marginTop="@dimen/_5sdp"
+                android:layout_marginStart="@dimen/_5sdp"
+                android:layout_marginEnd="@dimen/_5sdp"
+                android:elevation="@dimen/_2sdp"
+                app:progressView_radius="@dimen/_10sdp"
+                app:progressView_colorBackground="@color/white"
+                app:progressView_colorGradientStart="?progressView_colorGradientStart"
+                app:progressView_colorGradientEnd="?progressView_colorGradientEnd"
+                app:progressView_min="0"
+                app:progressView_max="100"
+                app:progressView_autoAnimate="true"
+                android:id="@+id/progressView"/>
+        </LinearLayout>
+
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="24dp"
+            android:layout_gravity="end|center_vertical"
+            android:src="@drawable/baseline_keyboard_arrow_right_24"
+            android:id="@+id/iconView"
+            app:tint="?colorOnSecondary" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

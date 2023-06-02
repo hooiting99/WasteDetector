@@ -5,9 +5,9 @@
         android:icon="@drawable/add_photo_icon"
         android:title="Detect"  />
     <item
-        android:id="@+id/summary"
-        android:icon="@drawable/history_icon"
-        android:title="Summary" />
+        android:id="@+id/gallery"
+        android:icon="@drawable/ic_gallery"
+        android:title="Gallery" />
     <item
         android:id="@+id/profile"
         android:icon="@drawable/account_icon"

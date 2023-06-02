@@ -10,7 +10,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.wastedetector.fragment.HomeFragment
 import com.example.wastedetector.fragment.ProfileFragment
-import com.example.wastedetector.fragment.SummaryFragment
+import com.example.wastedetector.fragment.GalleryFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
@@ -23,8 +23,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        reqPermissions()
-        loadFragment(HomeFragment())
+//        Ensure the fragment state is null before recreating fragment transaction
+        if (savedInstanceState == null) {
+            reqPermissions()
+            loadFragment(HomeFragment())
+        }
+
         bottomNav = findViewById(R.id.bottomNav)
         bottomNav.setOnItemSelectedListener {
             when (it.itemId) {
@@ -32,8 +36,8 @@ class MainActivity : AppCompatActivity() {
                     loadFragment(HomeFragment())
                     true
                 }
-                R.id.summary -> {
-                    loadFragment(SummaryFragment())
+                R.id.gallery -> {
+                    loadFragment(GalleryFragment())
                     true
                 }
                 R.id.profile -> {

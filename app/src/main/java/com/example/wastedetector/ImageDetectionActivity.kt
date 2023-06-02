@@ -18,8 +18,6 @@ import android.view.View
 import android.view.View.*
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.graphics.drawable.toDrawable
-import androidx.core.graphics.toColor
 import androidx.lifecycle.lifecycleScope
 import cn.pedant.SweetAlert.SweetAlertDialog
 import com.google.android.material.appbar.MaterialToolbar
@@ -116,8 +114,6 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
             }
         }
     }
-
-
 
     @Suppress("DEPRECATION")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

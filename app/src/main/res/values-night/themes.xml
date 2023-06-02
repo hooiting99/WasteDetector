@@ -14,5 +14,8 @@
         <!-- Customize your theme here. -->
         <item name="android:fontFamily">serif</item>
         <item name="hintTextColor">@color/dark_hint_color</item>
+        <item name="cardBackgroundColor">@color/dark_card_color</item>
+        <item name="progressView_colorGradientStart">@color/teal_200</item>
+        <item name="progressView_colorGradientEnd">@color/teal_700</item>
     </style>
 </resources>
