@@ -233,6 +233,8 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
             val imageW: Int = outWidth
             val imageH: Int = outHeight
 
+            Log.d(TAG, "Original image size: $imageW, $imageH")
+
             val scaleFactor: Int = max(1, min(imageW / targetW, imageH / targetH))
 
             inJustDecodeBounds = false
@@ -297,13 +299,13 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
                 }
 
                 override fun onResults(results: MutableList<Detection>?, imageHeight: Int, imageWidth: Int) {
-                    debugPrint(results!!) // Print the results for checking
+                    debugPrint(results!!, imageHeight, imageWidth) // Print the results for checking
 //                  Parse the detection result
                     val displayResult = results.map {
                         val category = it.categories.first()
                         val text = "${category.label}, ${category.score.times(100).toInt()}%"
 
-                //                        Create a data obj to display the detection result
+                        // Create a data obj to display the detection result
                         DetectionResult(it.boundingBox, text)
                     }
 
@@ -311,6 +313,8 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
                     val cate = StringBuilder()
                     val method = StringBuilder()
 
+                    // Display is recyclable or not and
+                    // some info regarding the importance of recycling the detected waste
                     for (result in results) {
                         val category = result.categories.first()
                         val label = category.label
@@ -368,6 +372,15 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
                         categoryView.text = cate.toString()
                         descriptionView.text = method.toString()
 
+                        // Change the text of button accordingly
+                        if (cate.toString().contains("Trash")) {
+                            recycleBtn.text = "Throw it"
+                        } else {
+                            recycleBtn.text = "Recycle it"
+                        }
+
+                        // Assume user recycle the detected item
+                        // Save the result and perform related computational (mission progress, points, etc)
                         recycleBtn.setOnClickListener { saveDetectionResult(categories) }
                     }
                 }
@@ -376,10 +389,11 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
         objectDetectorHelper.detect(bitmap) // Run waste detection
     }
 
-    private fun debugPrint(results : List<Detection>) {
+    private fun debugPrint(results: List<Detection>, imageHeight: Int, imageWidth: Int) {
         for ((i, obj) in results.withIndex()) {
             val box = obj.boundingBox
 
+            Log.d(TAG, "Image size: $imageWidth, $imageHeight")
             Log.d(TAG, "Detected object: $i ")
             Log.d(TAG, "  boundingBox: (${box.left}, ${box.top}) - (${box.right},${box.bottom})")
 
@@ -488,41 +502,44 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
         } else {
             val uploadTask = imageRef.putBytes(imageBytes)
             uploadTask.addOnSuccessListener { taskSnapshot ->
-//            Retrieve the image URL when upload successful
-                val downloadUrl = taskSnapshot.metadata?.reference?.downloadUrl?.toString()
+//              Retrieve the image URL when upload successful
+                imageRef.downloadUrl.addOnSuccessListener { uri ->
+                    val downloadUrl = uri.toString()
 
-//            Store the detection result into Firestore based on appropriate category
-                for (category in categories) {
-                    val detectionResultRef = db.collection("users").document(userId.toString()).collection(category)
-                    val currentDate = taskSnapshot.metadata?.creationTimeMillis
-                    val detectionResultData = hashMapOf(
-                        "imageUrl" to downloadUrl,
-                        "date" to currentDate,
-                    )
+//                  Store the detection result into Firestore based on appropriate category
+                    for (category in categories) {
+                        val detectionResultRef = db.collection("users").document(userId.toString()).collection(category.trim())
+                        val currentDate = taskSnapshot.metadata?.creationTimeMillis
+                        val detectionResultData = hashMapOf(
+                            "imageUrl" to downloadUrl,
+                            "date" to currentDate,
+                        )
 
-                    detectionResultRef
-                        .add(detectionResultData)
-                        .addOnSuccessListener { documentReference ->
-                            Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.id)
-                            dialog.changeAlertType(SweetAlertDialog.SUCCESS_TYPE)
-                            dialog.titleText = "Congratulations!"
-                            contentTextView.text = "You have earned a reward!"
-                            btn.visibility = VISIBLE
-                            recycleBtn.visibility = INVISIBLE
-                            uploadImage.visibility = VISIBLE
-                            captureImage.visibility = VISIBLE
-                        }
-                        .addOnFailureListener { e ->
-                            Log.w(TAG, "Error adding document", e)
-                            dialog.changeAlertType(SweetAlertDialog.ERROR_TYPE)
-                            dialog.titleText = "Opps..."
-                            contentTextView.text = "Something went wrong! Try Again!"
-                            btn.visibility = VISIBLE
-                        }
+                        detectionResultRef
+                            .add(detectionResultData)
+                            .addOnSuccessListener { documentReference ->
+                                Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.id)
+                                dialog.changeAlertType(SweetAlertDialog.SUCCESS_TYPE)
+                                dialog.titleText = "Congratulations!"
+                                contentTextView.text = "You have earned one point!"
+                                btn.visibility = VISIBLE
+                                recycleBtn.visibility = INVISIBLE
+                                uploadImage.visibility = VISIBLE
+                                captureImage.visibility = VISIBLE
+                            }
+                            .addOnFailureListener { e ->
+                                Log.w(TAG, "Error adding document", e)
+                                dialog.changeAlertType(SweetAlertDialog.ERROR_TYPE)
+                                dialog.titleText = "Opps..."
+                                contentTextView.text = "Something went wrong! Try Again!"
+                                btn.visibility = VISIBLE
+                            }
+                    }
+                }.addOnFailureListener { e ->
+                    Log.w(TAG, "Error getting download URL", e)
                 }
             }.addOnFailureListener { e ->
                 // Image upload failed
-                // Display an error message or handle the failure case
                 Log.w(TAG, "Error adding document", e)
                 dialog.changeAlertType(SweetAlertDialog.ERROR_TYPE)
                 dialog.titleText = "Opps..."

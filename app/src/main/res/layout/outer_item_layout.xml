@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/_3sdp"
+        android:layout_marginTop="@dimen/_12sdp"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="?colorOnSecondary"
+        android:textStyle="bold"
+        android:id="@+id/dateHeaderText"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/innerImageView"/>
+</LinearLayout>

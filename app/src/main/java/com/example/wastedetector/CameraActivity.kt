@@ -4,12 +4,12 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.util.Size
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.core.ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -159,7 +159,7 @@ class CameraActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListene
         // Create time-stamped output file to hold the image
         val photoFile = File(
             outputDirectory,
-            SimpleDateFormat(FILENAME_FORMAT, Locale.US).format(System.currentTimeMillis()) + ".jpg"
+            SimpleDateFormat(FILENAME_FORMAT, Locale.getDefault()).format(System.currentTimeMillis()) + ".jpg"
         )
 
         // Create output options object which contains file + metadata

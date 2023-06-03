@@ -20,7 +20,6 @@ class GalleryFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_gallery, container, false)
 
         recyclerView = view.findViewById(R.id.cardRecyclerView)
@@ -42,10 +41,10 @@ class GalleryFragment : Fragment() {
         }
         recyclerView.adapter = categoryAdapter
 
-
         return view
     }
 
+    // Display all the images based on the selected category
     private fun navigateToImagesFragment(category: Category) {
         val fragment = ImageFragment.newInstance(category)
         requireActivity().supportFragmentManager

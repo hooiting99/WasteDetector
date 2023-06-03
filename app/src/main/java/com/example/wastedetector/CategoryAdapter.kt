@@ -1,12 +1,9 @@
 package com.example.wastedetector
 
-import android.print.PrintAttributes.Margins
 import android.util.Log
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewGroup.MarginLayoutParams
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -53,7 +50,10 @@ class CategoryAdapter(
 
             dbRef.get()
                 .addOnSuccessListener { querySnapshot ->
+                    // Get the size of images saved
                     val count = querySnapshot.size()
+
+                    // Update the progress of recycle mission
                     val currentMax = progressView.max
                     val nextMax = getNextMaxValue(count)
 
@@ -62,7 +62,7 @@ class CategoryAdapter(
                     }
                     progressView.progress = count.toFloat()
                     missionProgress.text = "Mission: $count/${progressView.max.toInt()}"
-                    Log.d("CAT_ADP", "Number of images for ${category.name}: $count")
+                    Log.d("CAT_ADP", "Number of images for ${category.name.lowercase()}: $count")
                 }
                 .addOnFailureListener { e ->
                     Log.e("CAT_ADP", "Error getting the counts: $e")
@@ -75,6 +75,7 @@ class CategoryAdapter(
         }
     }
 
+    // Used to keep update the mission target
     private fun getNextMaxValue(count: Int): Int {
         var nextMax = 100
         while (nextMax <= count) {
