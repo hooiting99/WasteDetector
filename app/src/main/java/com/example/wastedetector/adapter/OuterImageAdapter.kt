@@ -1,4 +1,4 @@
-package com.example.wastedetector
+package com.example.wastedetector.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.wastedetector.R
 import com.example.wastedetector.fragment.OuterData
 
 class OuterImageAdapter(private val context: Context, private val dateList: List<OuterData>) :

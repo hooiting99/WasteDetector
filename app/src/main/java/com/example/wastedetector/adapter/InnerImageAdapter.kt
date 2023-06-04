@@ -1,4 +1,4 @@
-package com.example.wastedetector
+package com.example.wastedetector.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.wastedetector.R
 
 class InnerImageAdapter(private val context: Context, private val images: List<String>) :
     RecyclerView.Adapter<InnerImageAdapter.InnerViewHolder>() {

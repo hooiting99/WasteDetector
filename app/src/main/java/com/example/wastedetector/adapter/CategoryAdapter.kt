@@ -1,4 +1,4 @@
-package com.example.wastedetector
+package com.example.wastedetector.adapter
 
 import android.util.Log
 import android.view.LayoutInflater
@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.wastedetector.R
 import com.example.wastedetector.fragment.Category
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -20,7 +21,7 @@ class CategoryAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.card_view_item, parent, false)
+            .inflate(R.layout.item_category, parent, false)
         return ViewHolder(view)
     }
 

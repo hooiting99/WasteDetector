@@ -9,7 +9,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wastedetector.MainActivity
-import com.example.wastedetector.OuterImageAdapter
+import com.example.wastedetector.adapter.OuterImageAdapter
 import com.example.wastedetector.R
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore

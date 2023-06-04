@@ -7,8 +7,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.wastedetector.CategoryAdapter
 import com.example.wastedetector.R
+import com.example.wastedetector.adapter.CategoryAdapter
 import java.io.Serializable
 
 class GalleryFragment : Fragment() {
