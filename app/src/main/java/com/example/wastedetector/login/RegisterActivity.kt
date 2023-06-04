@@ -1,7 +1,6 @@
 package com.example.wastedetector.login
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.util.Patterns
@@ -9,12 +8,11 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
-import com.example.wastedetector.ImageDetectionActivity
+import androidx.appcompat.app.AppCompatActivity
 import com.example.wastedetector.MainActivity
 import com.example.wastedetector.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
@@ -60,6 +58,7 @@ class RegisterActivity : AppCompatActivity() {
         val emailStr = email.text.toString()
         val passStr = password.text.toString()
         val confPassStr = confPass.text.toString()
+        val point = 0
 
         // User input validation
         if (nameStr.isEmpty() || emailStr.isEmpty() || passStr.isEmpty() || confPassStr.isEmpty()) {
@@ -89,6 +88,7 @@ class RegisterActivity : AppCompatActivity() {
                         val userRef = db.collection("users").document(userId.toString())
                         val userData = hashMapOf(
                             "username" to nameStr,
+                            "point" to point
                         )
                         userRef
                             .set(userData)

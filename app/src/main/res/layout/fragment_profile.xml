@@ -6,31 +6,110 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".fragment.ProfileFragment">
 
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginEnd="@dimen/_10sdp"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:src="@drawable/baseline_logout_24"
+        android:id="@+id/logout"
+        app:tint="?colorPrimary" />
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
         <com.google.android.material.imageview.ShapeableImageView
-            android:layout_width="@dimen/_200sdp"
-            android:layout_height="@dimen/_200sdp"
-            android:layout_marginTop="@dimen/_70sdp"
+            android:layout_width="@dimen/_120sdp"
+            android:layout_height="@dimen/_120sdp"
+            android:layout_marginTop="@dimen/_45sdp"
             app:shapeAppearanceOverlay="@style/circular"
             android:padding="5dp"
             app:strokeWidth="5dp"
             app:strokeColor="?colorPrimary"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent"
+            android:src="@drawable/account_icon"
+            android:tint="#ABEDECE2"
+            android:id="@+id/profileImage"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_5sdp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/profileImage"
+            android:textColor="?colorOnSecondary"
+            android:textAppearance="?android:textAppearanceLarge"
+            android:textStyle="bold"
+            android:id="@+id/userName"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/userName"
+            android:textColor="?colorOnSecondary"
+            android:textAppearance="?android:textAppearanceSmall"
+            android:id="@+id/userEmail"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_20sdp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/userEmail">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/_10sdp"
+                android:text="Level 1"
+                android:textColor="?colorOnSecondary"
+                android:textStyle="bold"
+                android:textAppearance="?android:textAppearanceSmall"
+                android:layout_gravity="center"
+                android:id="@+id/userLevel"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="@dimen/_5sdp"
+                android:paddingEnd="@dimen/_10sdp"
+                android:background="@drawable/dialog_bg">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/_2sdp"
+                    android:src="@drawable/baseline_recycling_24"
+                    app:tint="@color/green" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/_5sdp"
+                    android:text="0 point"
+                    android:textColor="?colorOnSecondary"
+                    android:textAppearance="?android:textAppearanceSmall"
+                    android:layout_gravity="center"
+                    android:id="@+id/userPoint"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
 
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="logout"
-        android:layout_gravity="center_horizontal|bottom"
-        android:id="@+id/logout"/>
+
 
 </FrameLayout>

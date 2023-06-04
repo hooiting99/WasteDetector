@@ -508,7 +508,8 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
 
 //                  Store the detection result into Firestore based on appropriate category
                     for (category in categories) {
-                        val detectionResultRef = db.collection("users").document(userId.toString()).collection(category.trim())
+                        val userRef = db.collection("users").document(userId.toString())
+                        val detectionResultRef = userRef.collection(category.trim())
                         val currentDate = taskSnapshot.metadata?.creationTimeMillis
                         val detectionResultData = hashMapOf(
                             "imageUrl" to downloadUrl,
@@ -519,16 +520,57 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
                             .add(detectionResultData)
                             .addOnSuccessListener { documentReference ->
                                 Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.id)
-                                dialog.changeAlertType(SweetAlertDialog.SUCCESS_TYPE)
-                                dialog.titleText = "Congratulations!"
-                                contentTextView.text = "You have earned one point!"
-                                btn.visibility = VISIBLE
-                                recycleBtn.visibility = INVISIBLE
-                                uploadImage.visibility = VISIBLE
-                                captureImage.visibility = VISIBLE
+
+                                userRef.get()
+                                    .addOnSuccessListener { documentSnapshot ->
+                                        if (documentSnapshot.exists()) {
+                                            if (documentSnapshot.contains("point")) {
+                                                // Retrieve the current value of the point
+                                                val currentPoint = documentSnapshot.getLong("point") ?: 0
+
+                                                // Add one point for each waste recycled
+                                                val newPoint = currentPoint + 1
+
+                                                // Create a HashMap to represent the updated value
+                                                val data = hashMapOf(
+                                                    "point" to newPoint
+                                                )
+
+                                                // Update the field value in Firestore
+                                                userRef.update(data as Map<String, Any>)
+                                                    .addOnSuccessListener {
+                                                        // The "point" value has been successfully updated
+                                                        Log.d(TAG, "The point is updated: $newPoint ")
+
+                                                        dialog.changeAlertType(SweetAlertDialog.SUCCESS_TYPE)
+                                                        dialog.titleText = "Congratulations!"
+                                                        contentTextView.text = "You have earned one point!"
+                                                        btn.visibility = VISIBLE
+                                                        recycleBtn.visibility = INVISIBLE
+                                                        uploadImage.visibility = VISIBLE
+                                                        captureImage.visibility = VISIBLE
+                                                    }
+                                                    .addOnFailureListener { e ->
+                                                        Log.w(TAG, "Error updating the point", e)
+                                                    }
+                                            } else {
+                                                Log.e(TAG, "No field named point")
+                                            }
+                                        } else {
+                                            Log.e(TAG, "Something wrong when get users document")
+                                        }
+                                    }
+                                    .addOnFailureListener { e ->
+                                        // An error occurred while retrieving the document snapshot
+                                        Log.e(TAG, "Cant retrieve the point", e)
+                                        dialog.changeAlertType(SweetAlertDialog.ERROR_TYPE)
+                                        dialog.titleText = "Opps..."
+                                        contentTextView.text = "Something went wrong! Try Again!"
+                                        btn.visibility = VISIBLE
+                                    }
                             }
                             .addOnFailureListener { e ->
-                                Log.w(TAG, "Error adding document", e)
+                                Log.e(TAG, "Error adding document", e)
                                 dialog.changeAlertType(SweetAlertDialog.ERROR_TYPE)
                                 dialog.titleText = "Opps..."
                                 contentTextView.text = "Something went wrong! Try Again!"
