@@ -93,25 +93,26 @@ class RegisterActivity : AppCompatActivity() {
                         userRef
                             .set(userData)
                             .addOnSuccessListener {
-                                Log.d(TAG, "DocumentSnapshot successfully written!")
+                                Log.d(TAG, "User data successfully written!")
                             }
                             .addOnFailureListener { e ->
-                                Log.w(TAG, "Error writing document", e)
+                                Log.w(TAG, "Error writing user data", e)
                             }
 
                         val intent = Intent(this, MainActivity::class.java)
                         startActivity(intent)
                         finish()
                     } else {
+                        // If sign in fails, display a message to the user.
+                        Log.e("auth", "createUserWithEmail:failure", task.exception)
+                        Toast.makeText(this, "Register failed.", Toast.LENGTH_SHORT,).show()
+
                         try {
                             throw task.exception!!
                         } catch (e: FirebaseAuthUserCollisionException) {
                             // email already in use
-                            Toast.makeText(this, "Email already taken!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "Email already in used! Please login!", Toast.LENGTH_SHORT).show()
                         }
-                        // If sign in fails, display a message to the user.
-                        Log.w("auth", "createUserWithEmail:failure", task.exception)
-                        Toast.makeText(this, "Authentication failed.", Toast.LENGTH_SHORT,).show()
                     }
                 }
         }

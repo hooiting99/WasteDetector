@@ -1,5 +1,6 @@
 package com.example.wastedetector.fragment
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -16,18 +17,23 @@ import cn.pedant.SweetAlert.SweetAlertDialog
 import com.example.wastedetector.R
 import com.example.wastedetector.adapter.RewardAdapter
 import com.example.wastedetector.login.WelcomeScreen
+import com.google.android.material.card.MaterialCardView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
+import kotlin.math.floor
+import kotlin.math.sqrt
 
-class ProfileFragment : Fragment() {
+class ProfileFragment : Fragment(), View.OnClickListener {
 
     private lateinit var userName: TextView
     private lateinit var userEmail: TextView
+    private lateinit var userLevel: TextView
     private lateinit var userPoint: TextView
+    private lateinit var verifyEmail: MaterialCardView
     private lateinit var logOut: ImageView
     private lateinit var rewardView: RecyclerView
     private var customView: View? = null
@@ -48,27 +54,88 @@ class ProfileFragment : Fragment() {
 
         userName = view.findViewById(R.id.userName)
         userEmail = view.findViewById(R.id.userEmail)
+        userLevel = view.findViewById(R.id.userLevel)
         userPoint = view.findViewById(R.id.userPoint)
         rewardView = view.findViewById(R.id.rewardView)
         rewardAdapter = RewardAdapter(rewardsList)
         rewardView.adapter = rewardAdapter
         rewardView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        verifyEmail = view.findViewById(R.id.verifyEmail)
 
         logOut = view.findViewById(R.id.logout)
         auth = Firebase.auth
         currentUser = auth.currentUser!!
+        currentUser.reload()
         db = FirebaseFirestore.getInstance()
         userRef = db.collection("users").document(currentUser.uid)
 
         showLoadingDialog() // Display Loading when retrieving data
         loadUserData() // Display the user data
 
-        // Sign out
-        logOut.setOnClickListener {
-            signOut()
-        }
+        verifyEmail.setOnClickListener(this) // Verify user email
+        logOut.setOnClickListener(this) // Sign out
 
         return view
+    }
+
+    override fun onClick(v: View?) {
+        when (v?.id) {
+            R.id.verifyEmail -> {
+                sendEmailVerification()
+            }
+            R.id.logout -> {
+                try{
+                    signOut()
+                }catch (e: ActivityNotFoundException) {
+                    Log.e(TAG, e.message.toString())
+                }
+            }
+        }
+    }
+
+    private fun sendEmailVerification() {
+
+        // Check if the email is verified
+        // Sent verification email if not
+        currentUser.reload()
+        if (!currentUser.isEmailVerified) {
+            currentUser.sendEmailVerification()
+                .addOnCompleteListener {
+                    if (it.isSuccessful) {
+                        Log.d(TAG, "Email is sent to ${currentUser.email}")
+                        showVerificationDialog("The verification email is sent. Please check!")
+                    } else {
+                        Log.e(TAG, "Failed to send verification email")
+                    }
+                }
+        } else {
+            Log.d(TAG, "Email already verified")
+            showVerificationDialog("Your email is verified.")
+        }
+    }
+
+    // Tell user the status of email verification
+    private fun showVerificationDialog(s: String) {
+        customView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_custom_layout, null)
+        val contentTextView = customView?.findViewById<TextView>(R.id.contentTextView)
+        val btn = customView?.findViewById<Button>(R.id.customBtn)
+        loadingDialog = SweetAlertDialog(requireContext(), SweetAlertDialog.CUSTOM_IMAGE_TYPE)
+        loadingDialog!!
+            .setTitleText("Verify Email")
+            .setCustomImage(R.drawable.email)
+            .setCustomView(customView)
+            .hideConfirmButton()
+            .also {
+                it.setCancelable(false)
+                it.setCanceledOnTouchOutside(false)
+            }
+            .show()
+
+        contentTextView?.text = s
+        btn?.visibility = View.VISIBLE
+        btn?.setOnClickListener {
+            loadingDialog?.dismissWithAnimation()
+        }
     }
 
     // Configure and Display the loading dialog
@@ -94,11 +161,13 @@ class ProfileFragment : Fragment() {
                 if (it.exists()) {
                     val username = it.getString("username")
                     val email = currentUser.email
-                    val point = it.getLong("point")
+                    val point = it.getLong("point") ?: 0
+                    val level = floor(sqrt(point.toDouble() / 100)).toInt() + 1
 
                     // Update the field accordingly
                     userName.text = username
                     userEmail.text = email
+                    userLevel.text = "Level $level"
                     userPoint.text = "$point points"
 
                     loadRewards(point) // Display the rewards and status
@@ -202,6 +271,8 @@ class ProfileFragment : Fragment() {
     companion object {
         const val TAG = "PRO_FRAG"
     }
+
+
 }
 
 // Data object to hold the data of reward

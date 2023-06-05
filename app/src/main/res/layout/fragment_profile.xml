@@ -68,7 +68,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/_10sdp"
-            android:text="Level 1"
             android:textColor="?colorOnSecondary"
             android:textStyle="bold"
             android:textAppearance="?android:textAppearanceSmall"
@@ -121,5 +120,74 @@
         app:layout_constraintTop_toBottomOf="@+id/rewardHeader"
         app:layout_constraintStart_toStartOf="parent"
         android:id="@+id/rewardView"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_100sdp"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:layout_marginBottom="@dimen/_10sdp"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@+id/rewardView"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="0dp"
+            android:layout_height="@dimen/_80sdp"
+            android:layout_weight="1"
+            android:layout_marginStart="@dimen/_20sdp"
+            android:layout_marginEnd="@dimen/_10sdp"
+            app:cardBackgroundColor="?cardBackgroundColor"
+            app:cardCornerRadius="@dimen/_10sdp"
+            app:cardElevation="6dp"
+            android:id="@+id/verifyEmail">
+
+            <ImageView
+                android:layout_width="@dimen/_50sdp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:layout_marginStart="@dimen/_10sdp"
+                android:scaleType="fitStart"
+                android:src="@drawable/email"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_marginBottom="@dimen/_5sdp"
+                android:layout_marginEnd="@dimen/_10sdp"
+                android:text="Verify Email"
+                android:textColor="?colorPrimary"/>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="0dp"
+            android:layout_height="@dimen/_80sdp"
+            android:layout_weight="1"
+            android:layout_marginStart="@dimen/_10sdp"
+            android:layout_marginEnd="@dimen/_20sdp"
+            app:cardBackgroundColor="?cardBackgroundColor"
+            app:cardCornerRadius="@dimen/_10sdp"
+            app:cardElevation="6dp">
+
+            <TextView
+                android:layout_width="@dimen/_80sdp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_5sdp"
+                android:layout_marginStart="@dimen/_10sdp"
+                android:text="How to earn point?"
+                android:textColor="?colorPrimary"/>
+
+            <ImageView
+                android:layout_width="@dimen/_50sdp"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/_10sdp"
+                android:layout_marginEnd="@dimen/_10sdp"
+                android:layout_gravity="end|bottom"
+                android:scaleType="fitEnd"
+                android:src="@drawable/qna"/>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
