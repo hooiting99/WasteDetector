@@ -18,6 +18,7 @@ import com.example.wastedetector.R
 import com.example.wastedetector.adapter.RewardAdapter
 import com.example.wastedetector.login.WelcomeScreen
 import com.google.android.material.card.MaterialCardView
+import com.google.android.material.imageview.ShapeableImageView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
@@ -29,11 +30,13 @@ import kotlin.math.sqrt
 
 class ProfileFragment : Fragment(), View.OnClickListener {
 
+    private lateinit var profileImage: ShapeableImageView
     private lateinit var userName: TextView
     private lateinit var userEmail: TextView
     private lateinit var userLevel: TextView
     private lateinit var userPoint: TextView
     private lateinit var verifyEmail: MaterialCardView
+    private lateinit var setting: ImageView
     private lateinit var logOut: ImageView
     private lateinit var rewardView: RecyclerView
     private var customView: View? = null
@@ -52,6 +55,7 @@ class ProfileFragment : Fragment(), View.OnClickListener {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_profile, container, false)
 
+        profileImage = view.findViewById(R.id.profileImage)
         userName = view.findViewById(R.id.userName)
         userEmail = view.findViewById(R.id.userEmail)
         userLevel = view.findViewById(R.id.userLevel)
@@ -61,8 +65,9 @@ class ProfileFragment : Fragment(), View.OnClickListener {
         rewardView.adapter = rewardAdapter
         rewardView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         verifyEmail = view.findViewById(R.id.verifyEmail)
-
         logOut = view.findViewById(R.id.logout)
+
+        // Initialize the current user and firestore instance
         auth = Firebase.auth
         currentUser = auth.currentUser!!
         currentUser.reload()
@@ -163,8 +168,15 @@ class ProfileFragment : Fragment(), View.OnClickListener {
                     val email = currentUser.email
                     val point = it.getLong("point") ?: 0
                     val level = floor(sqrt(point.toDouble() / 100)).toInt() + 1
+                    val image: String = if (level<7) {
+                        "profile$level"
+                    } else {
+                        "profile"
+                    }
+                    val res = resources.getIdentifier(image, "drawable", context?.packageName)
 
                     // Update the field accordingly
+                    profileImage.setImageResource(res)
                     userName.text = username
                     userEmail.text = email
                     userLevel.text = "Level $level"
@@ -206,7 +218,7 @@ class ProfileFragment : Fragment(), View.OnClickListener {
 
                         // Verify if the reward not yet claimed by user
                         isRewardClaimed(id) { isClaimed ->
-                            val reward = Reward(id, name, url, points, isEligible, isClaimed)
+                            val reward = Reward(id, name, url, points, isEligible, isClaimed, currentUser.isEmailVerified)
                             Log.d(TAG, reward.toString())
                             dataList.add(reward)
 
@@ -282,5 +294,6 @@ data class Reward(
     val url: String,
     val points: Long,
     val isEligible: Boolean,
-    val isClaimed: Boolean
+    val isClaimed: Boolean,
+    val isVerified: Boolean
 )

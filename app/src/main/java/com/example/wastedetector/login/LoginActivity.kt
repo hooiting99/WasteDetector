@@ -1,13 +1,18 @@
 package com.example.wastedetector.login
 
+import android.app.Dialog
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.util.Log
 import android.util.Patterns
+import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.example.wastedetector.MainActivity
 import com.example.wastedetector.R
 import com.google.firebase.auth.FirebaseAuth
@@ -18,6 +23,7 @@ class LoginActivity : AppCompatActivity() {
 
     private lateinit var email: EditText
     private lateinit var password: EditText
+    private lateinit var forgotPw : TextView
     private lateinit var loginBtn: Button
     private lateinit var redirectRegister: TextView
 
@@ -29,10 +35,15 @@ class LoginActivity : AppCompatActivity() {
 
         email = findViewById(R.id.loginEmail)
         password = findViewById(R.id.loginPassword)
+        forgotPw = findViewById(R.id.forgotPassword)
         loginBtn = findViewById(R.id.btnLogin)
         redirectRegister = findViewById(R.id.textRegister)
 
-        auth = Firebase.auth
+        auth = Firebase.auth // To authenticate the user
+
+        forgotPw.setOnClickListener {
+            sendResetPasswordEmail()
+        }
 
         loginBtn.setOnClickListener {
             login()
@@ -45,6 +56,47 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
+    private fun sendResetPasswordEmail() {
+        val dialog = Dialog(this)
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.custom_edittext_dialog, null)
+        val emailView = dialogView.findViewById<EditText>(R.id.emailText)
+        val sendBtn = dialogView.findViewById<TextView>(R.id.sendBtn)
+        val cancelBtn = dialogView.findViewById<TextView>(R.id.cancelBtn)
+
+        dialog.apply {
+            window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            setContentView(dialogView)
+            setCancelable(false)
+        }.show()
+
+        sendBtn.setOnClickListener {
+            val emailInput = emailView.text.toString()
+
+            if (emailInput.isEmpty()) {
+                Toast.makeText(this, "Email can't be blank", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            } else if (!Patterns.EMAIL_ADDRESS.matcher(emailInput).matches()) {
+                emailView.requestFocus()
+                Toast.makeText(this, "Enter a valid email address", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            } else {
+                auth.sendPasswordResetEmail(emailInput)
+                    .addOnCompleteListener {
+                        Toast.makeText(this, "Email Sent!", Toast.LENGTH_SHORT).show()
+                    }
+                    .addOnFailureListener { 
+                        Toast.makeText(this, "Something went wrong. Try Again!", Toast.LENGTH_SHORT).show()
+                        Log.e("RESET", "Failed with error: $it")
+                    }
+            }
+        }
+
+        cancelBtn.setOnClickListener {
+            dialog.dismiss()
+        }
+    }
+
+    // Sign in using email and password input by user
     private fun login() {
         val emailStr = email.text.toString()
         val passStr = password.text.toString()

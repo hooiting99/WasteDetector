@@ -33,7 +33,10 @@ class RewardAdapter(private val rewardsList: List<Reward>) :
         holder.rewardPoint.text = "${reward.points} points"
 
         // Update the button according to conditions
-        if (reward.isClaimed) {
+        if (!reward.isVerified && reward.isEligible) {
+            holder.claimBtn.text = "Verify to Claim"
+            holder.claimBtn.isEnabled = false
+        }else if (reward.isClaimed) {
             holder.claimBtn.text = "Claimed"
             holder.claimBtn.isEnabled = false
         } else if (!reward.isEligible) {
