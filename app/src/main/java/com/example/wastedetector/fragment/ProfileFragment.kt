@@ -36,7 +36,9 @@ class ProfileFragment : Fragment(), View.OnClickListener {
     private lateinit var userLevel: TextView
     private lateinit var userPoint: TextView
     private lateinit var verifyEmail: MaterialCardView
-    private lateinit var setting: ImageView
+    private lateinit var earnPoint: MaterialCardView
+    private lateinit var carbonEmission: TextView
+    private lateinit var emissionInfo: ImageView
     private lateinit var logOut: ImageView
     private lateinit var rewardView: RecyclerView
     private var customView: View? = null
@@ -60,11 +62,14 @@ class ProfileFragment : Fragment(), View.OnClickListener {
         userEmail = view.findViewById(R.id.userEmail)
         userLevel = view.findViewById(R.id.userLevel)
         userPoint = view.findViewById(R.id.userPoint)
+        carbonEmission = view.findViewById(R.id.carbonEmission)
+        emissionInfo = view.findViewById(R.id.emissionInfo)
         rewardView = view.findViewById(R.id.rewardView)
         rewardAdapter = RewardAdapter(rewardsList)
         rewardView.adapter = rewardAdapter
         rewardView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         verifyEmail = view.findViewById(R.id.verifyEmail)
+        earnPoint = view.findViewById(R.id.earnPoint)
         logOut = view.findViewById(R.id.logout)
 
         // Initialize the current user and firestore instance
@@ -77,7 +82,9 @@ class ProfileFragment : Fragment(), View.OnClickListener {
         showLoadingDialog() // Display Loading when retrieving data
         loadUserData() // Display the user data
 
+        emissionInfo.setOnClickListener(this) // Display way of calculating CO2e saved
         verifyEmail.setOnClickListener(this) // Verify user email
+        earnPoint.setOnClickListener(this) // Display way to get point through recycle
         logOut.setOnClickListener(this) // Sign out
 
         return view
@@ -85,8 +92,14 @@ class ProfileFragment : Fragment(), View.OnClickListener {
 
     override fun onClick(v: View?) {
         when (v?.id) {
+            R.id.emissionInfo -> {
+                displayCalMethod()
+            }
             R.id.verifyEmail -> {
                 sendEmailVerification()
+            }
+            R.id.earnPoint -> {
+                displayEarnPtMethod()
             }
             R.id.logout -> {
                 try{
@@ -96,6 +109,36 @@ class ProfileFragment : Fragment(), View.OnClickListener {
                 }
             }
         }
+    }
+
+    private fun displayEarnPtMethod() {
+        customView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_custom_layout, null)
+        val contentTextView = customView?.findViewById<TextView>(R.id.contentTextView)
+        val btn = customView?.findViewById<Button>(R.id.customBtn)
+        loadingDialog = SweetAlertDialog(requireContext(), SweetAlertDialog.CUSTOM_IMAGE_TYPE)
+        loadingDialog!!
+            .setTitleText("How to earn point")
+            .setCustomImage(R.drawable.email)
+            .setCustomView(customView)
+            .also {
+                it.setCancelable(false)
+                it.setCanceledOnTouchOutside(false)
+            }
+            .show()
+
+        contentTextView?.textAlignment = View.TEXT_ALIGNMENT_VIEW_START
+        contentTextView?.textSize = 12F
+        contentTextView?.text = "In our app, you can earn points by recycling waste! Here's how:\n\n" +
+                "1. Start by detecting waste: Use the waste detection feature to identify different types of waste items.\n\n" +
+                "2. Check recyclability: Once you detect an item, our app will let you know if it's recyclable or not.\n\n" +
+                "3. Recycle and earn points: If the item is recyclable, you'll see a 'Recycle' button. Click on it to recycle the waste.\n\n" +
+                "4. Earn points: Each time you successfully recycle an item, you'll earn points. The more you recycle, the more points you can accumulate.\n\n" +
+                "5. Track your progress: Keep an eye on your points in the app. You can see your total points earned and use them to unlock rewards or participate in challenges.\n\n" +
+                "Remember, recycling helps protect the environment and reduces waste. So, start recycling today and earn points for your positive impact!"
+    }
+
+    private fun displayCalMethod() {
+        TODO("Not yet implemented")
     }
 
     private fun sendEmailVerification() {
@@ -167,6 +210,7 @@ class ProfileFragment : Fragment(), View.OnClickListener {
                     val username = it.getString("username")
                     val email = currentUser.email
                     val point = it.getLong("point") ?: 0
+                    val emission = it.getDouble("emission")
                     val level = floor(sqrt(point.toDouble() / 100)).toInt() + 1
                     val image: String = if (level<7) {
                         "profile$level"
@@ -181,6 +225,8 @@ class ProfileFragment : Fragment(), View.OnClickListener {
                     userEmail.text = email
                     userLevel.text = "Level $level"
                     userPoint.text = "$point points"
+                    println("emission$emission")
+                    carbonEmission.text = "$emission kg CO2e saved"
 
                     loadRewards(point) // Display the rewards and status
                 } else {
@@ -192,6 +238,15 @@ class ProfileFragment : Fragment(), View.OnClickListener {
                 showErrorDialog("Something wrong! Try clear cache and reload!")
             }
     }
+
+//    private fun calEmission(): String {
+//        val categories = listOf("cardboard", "glass", "metal", "plastic", "paper")
+//
+//        for (category in categories) {
+//            val dbRef = userRef.collection(category)
+//        }
+//
+//    }
 
     private fun loadRewards(pt: Long?) {
 

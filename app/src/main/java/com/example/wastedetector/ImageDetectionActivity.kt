@@ -279,10 +279,6 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
     private fun setViewAndDetect(bitmap: Bitmap) {
         resultView.setImageBitmap(bitmap)
         defaultLayout.visibility = INVISIBLE
-        uploadImage.visibility = INVISIBLE
-        captureImage.visibility = INVISIBLE
-        recycleBtn.visibility = VISIBLE
-
         lifecycleScope.launch(Dispatchers.Default) { runObjectDetection(bitmap) }
     }
 
@@ -299,90 +295,102 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
                 }
 
                 override fun onResults(results: MutableList<Detection>?, imageHeight: Int, imageWidth: Int) {
-                    debugPrint(results!!, imageHeight, imageWidth) // Print the results for checking
-//                  Parse the detection result
-                    val displayResult = results.map {
-                        val category = it.categories.first()
-                        val text = "${category.label}, ${category.score.times(100).toInt()}%"
 
-                        // Create a data obj to display the detection result
-                        DetectionResult(it.boundingBox, text)
-                    }
+                    if (results.isNullOrEmpty()) {
+                        Log.w(TAG, "No detection result")
+                        categoryView.text = "No waste detected"
+                    } else {
+                        // Print the results for checking
+                        debugPrint(results, imageHeight, imageWidth)
+                        // Parse the detection result
+                        val displayResult = results.map {
+                            val category = it.categories.first()
+                            val text = "${category.label}, ${category.score.times(100).toInt()}%"
 
-                    val categories = HashSet<String>()
-                    val cate = StringBuilder()
-                    val method = StringBuilder()
+                            // Create a data obj to display the detection result
+                            DetectionResult(it.boundingBox, text)
+                        }
 
-                    // Display is recyclable or not and
-                    // some info regarding the importance of recycling the detected waste
-                    for (result in results) {
-                        val category = result.categories.first()
-                        val label = category.label
+                        val categories = HashSet<String>()
+                        val cate = StringBuilder()
+                        val method = StringBuilder()
 
-                        if (!categories.contains(label)) {
-                            categories.add(label)
-                            when (label.trim()) {
-                                "cardboard" -> {
-                                    cate.append("Cardboard (Recyclable)\n")
-                                    method.append("Cardboard is recyclable and has a lower environmental impact " +
-                                            "compared to other packaging materials." +
-                                            "Recycling cardboard saves energy and reduces carbon emissions. " +
-                                            "Flatten and remove non-recyclable elements, then place it in recycling bins or facilities.\n")
-                                }
-                                "glass" -> {
-                                    cate.append("Glass (Recyclable)\n")
-                                    method.append("Glass is endlessly recyclable and has a low carbon footprint when recycled. " +
-                                            "To recycle glass, separate it by color (clear, green, brown), " +
-                                            "remove any non-recyclable elements like metal caps, and place it in designated recycling bins.")
-                                }
-                                "metal" -> {
-                                    cate.append("Metal (Recyclable)\n")
-                                    method.append("Metal recycling helps conserve natural resources and significantly reduces " +
-                                            "carbon emissions compared to primary metal production." +
-                                            "You can repurpose the metal items for creative DIY projects or functional use.")
-                                }
-                                "plastic" -> {
-                                    cate.append("Plastic (Recyclable)\n")
-                                    method.append("Plastics' production involves fossil fuel extraction, " +
-                                            "releasing greenhouse gases. Improper disposal leads to more emissions." +
-                                            "To recycle plastic, clean and sort them properly and rinsing out any residue. " +
-                                            "Then, deposit them in designated recycling bins or take them to local recycling centers.")
-                                }
-                                "paper" -> {
-                                    cate.append("Paper (Recyclable)\n")
-                                    method.append("Recycling paper is an eco-friendly choice that helps reduce deforestation and " +
-                                            "the carbon emissions associated with paper production. " +
-                                            "By separating paper waste and placing it in designated recycling bins or centers, " +
-                                            "you can contribute to the conservation of trees and energy resources.")
-                                }
-                                "trash" -> {
-                                    cate.append("Trash (Non-Recyclable)\n")
-                                    method.append("Items that cannot be recycled and belong in the trash contribute to carbon emissions when disposed of improperly." +
-                                            "Dispose of non-recyclable items in designated trash bins or follow local waste management guidelines " +
-                                            "to promote a cleaner and more sustainable environment.")
+                        // Display is recyclable or not and
+                        // some info regarding the importance of recycling the detected waste
+                        for (result in results) {
+                            val category = result.categories.first()
+                            val label = category.label
+
+                            if (!categories.contains(label)) {
+                                categories.add(label)
+                                when (label.trim()) {
+                                    "cardboard" -> {
+                                        cate.append("Cardboard (Recyclable)\n")
+                                        method.append("Cardboard is recyclable and has a lower environmental impact " +
+                                                "compared to other packaging materials." +
+                                                "Recycling cardboard saves energy and reduces carbon emissions. " +
+                                                "Flatten and remove non-recyclable elements, then place it in recycling bins or facilities.\n")
+                                    }
+                                    "glass" -> {
+                                        cate.append("Glass (Recyclable)\n")
+                                        method.append("Glass is endlessly recyclable and has a low carbon footprint when recycled. " +
+                                                "To recycle glass, separate it by color (clear, green, brown), " +
+                                                "remove any non-recyclable elements like metal caps, and place it in designated recycling bins.")
+                                    }
+                                    "metal" -> {
+                                        cate.append("Metal (Recyclable)\n")
+                                        method.append("Metal recycling helps conserve natural resources and significantly reduces " +
+                                                "carbon emissions compared to primary metal production." +
+                                                "You can repurpose the metal items for creative DIY projects or functional use.")
+                                    }
+                                    "plastic" -> {
+                                        cate.append("Plastic (Recyclable)\n")
+                                        method.append("Plastics' production involves fossil fuel extraction, " +
+                                                "releasing greenhouse gases. Improper disposal leads to more emissions." +
+                                                "To recycle plastic, clean and sort them properly and rinsing out any residue. " +
+                                                "Then, deposit them in designated recycling bins or take them to local recycling centers.")
+                                    }
+                                    "paper" -> {
+                                        cate.append("Paper (Recyclable)\n")
+                                        method.append("Recycling paper is an eco-friendly choice that helps reduce deforestation and " +
+                                                "the carbon emissions associated with paper production. " +
+                                                "By separating paper waste and placing it in designated recycling bins or centers, " +
+                                                "you can contribute to the conservation of trees and energy resources.")
+                                    }
+                                    "trash" -> {
+                                        cate.append("Trash (Non-Recyclable)\n")
+                                        method.append("Items that cannot be recycled and belong in the trash contribute to carbon emissions when disposed of improperly." +
+                                                "Dispose of non-recyclable items in designated trash bins or follow local waste management guidelines " +
+                                                "to promote a cleaner and more sustainable environment.")
+                                    }
                                 }
                             }
                         }
-                    }
 
-//                  Draw bounding box, label and score on the bitmap and display
-                    val imgResult = drawDetectionResult(bitmap, displayResult)
-                    runOnUiThread {
-                        resultView.setImageBitmap(imgResult)
-                        categoryView.text = cate.toString()
-                        descriptionView.text = method.toString()
+                        // Draw bounding box, label and score on the bitmap and display
+                        val imgResult = drawDetectionResult(bitmap, displayResult)
+                        runOnUiThread {
 
-                        // Change the text of button accordingly
-                        if (cate.toString().contains("Trash")) {
-                            recycleBtn.text = "Throw it"
-                        } else {
-                            recycleBtn.text = "Recycle it"
+                            uploadImage.visibility = INVISIBLE
+                            captureImage.visibility = INVISIBLE
+                            recycleBtn.visibility = VISIBLE
+                            resultView.setImageBitmap(imgResult)
+                            categoryView.text = cate.toString()
+                            descriptionView.text = method.toString()
+
+                            // Change the text of button accordingly
+                            if (cate.toString().contains("Trash")) {
+                                recycleBtn.text = "Throw it"
+                            } else {
+                                recycleBtn.text = "Recycle it"
+                            }
+
+                            // Assume user recycle the detected item
+                            // Save the result and perform related computational (mission progress, points, etc)
+                            recycleBtn.setOnClickListener { saveDetectionResult(categories) }
                         }
-
-                        // Assume user recycle the detected item
-                        // Save the result and perform related computational (mission progress, points, etc)
-                        recycleBtn.setOnClickListener { saveDetectionResult(categories) }
                     }
+
                 }
             }
         )
@@ -523,39 +531,65 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
 
                                 userRef.get()
                                     .addOnSuccessListener { documentSnapshot ->
+                                        var newPoint = 0
+                                        var newEmission = 0.0
                                         if (documentSnapshot.exists()) {
                                             if (documentSnapshot.contains("point")) {
                                                 // Retrieve the current value of the point
                                                 val currentPoint = documentSnapshot.getLong("point") ?: 0
 
                                                 // Add one point for each waste recycled
-                                                val newPoint = currentPoint + 1
-
-                                                // Create a HashMap to represent the updated value
-                                                val data = hashMapOf(
-                                                    "point" to newPoint
-                                                )
-
-                                                // Update the field value in Firestore
-                                                userRef.update(data as Map<String, Any>)
-                                                    .addOnSuccessListener {
-                                                        // The "point" value has been successfully updated
-                                                        Log.d(TAG, "The point is updated: $newPoint ")
-
-                                                        dialog.changeAlertType(SweetAlertDialog.SUCCESS_TYPE)
-                                                        dialog.titleText = "Congratulations!"
-                                                        contentTextView.text = "You have earned one point!"
-                                                        btn.visibility = VISIBLE
-                                                        recycleBtn.visibility = INVISIBLE
-                                                        uploadImage.visibility = VISIBLE
-                                                        captureImage.visibility = VISIBLE
-                                                    }
-                                                    .addOnFailureListener { e ->
-                                                        Log.w(TAG, "Error updating the point", e)
-                                                    }
+                                                newPoint = (currentPoint + 1).toInt()
                                             } else {
                                                 Log.e(TAG, "No field named point")
                                             }
+
+                                            if (documentSnapshot.contains("emission")) {
+                                                Log.d(TAG, "exist")
+                                                val emissionFactors = mapOf(
+                                                    "paper" to 0.0276,        // Emission factor for paper category
+                                                    "plastic" to 0.2,      // Emission factor for plastic category
+                                                    "cardboard" to 0.8,    // Emission factor for cardboard category
+                                                    "metal" to 4.0,        // Emission factor for metal category
+                                                    "glass" to 0.503         // Emission factor for glass category
+                                                )
+
+                                                val emissionFactor = emissionFactors[category.trim()] ?: 0.0
+                                                println("EmissionFactor: $emissionFactor")
+
+                                                // Retrieve the current value of the point
+                                                val currentEmission = documentSnapshot.getLong("emission") ?: 0
+
+                                                // Add one point for each waste recycled
+                                                newEmission = currentEmission + emissionFactor
+
+                                            } else {
+                                                Log.e(TAG, "No field named emission")
+                                            }
+
+                                            // Create a HashMap to represent the updated value
+                                            val data = hashMapOf(
+                                                "point" to newPoint,
+                                                "emission" to newEmission
+                                            )
+
+                                            // Update the field value in Firestore
+                                            userRef.update(data as Map<String, Any>)
+                                                .addOnSuccessListener {
+                                                    // The "point" value has been successfully updated
+                                                    Log.d(TAG, "The point and emission is updated: $newPoint, $newEmission")
+
+                                                    dialog.changeAlertType(SweetAlertDialog.SUCCESS_TYPE)
+                                                    dialog.titleText = "Congratulations!"
+                                                    contentTextView.text = "You have earned one point!"
+                                                    btn.visibility = VISIBLE
+                                                    recycleBtn.visibility = INVISIBLE
+                                                    uploadImage.visibility = VISIBLE
+                                                    captureImage.visibility = VISIBLE
+                                                }
+                                                .addOnFailureListener { e ->
+                                                    Log.w(TAG, "Error updating the point", e)
+                                                }
                                         } else {
                                             Log.e(TAG, "Something wrong when get users document")
                                         }

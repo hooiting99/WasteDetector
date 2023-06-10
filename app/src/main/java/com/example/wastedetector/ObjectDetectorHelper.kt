@@ -34,7 +34,7 @@ class ObjectDetectorHelper(
 
         optionsBuilder.setBaseOptions(baseOptionsBuilder.build())
 
-        val modelName ="model.tflite"
+        val modelName ="model4.tflite"
 
         try {
             objectDetector =
@@ -56,6 +56,7 @@ class ObjectDetectorHelper(
         val tensorImage = TensorImage.fromBitmap(image)
 
         val results = objectDetector?.detect(tensorImage)
+        println(results)
         objectDetectorListener?.onResults(
             results,
             tensorImage.height,
