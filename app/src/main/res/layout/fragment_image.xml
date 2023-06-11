@@ -1,14 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     tools:context=".fragment.ImageFragment">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/topAppBar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:title="Gallery"
+            app:titleCentered="true"
+            app:titleTextColor="?attr/colorPrimary"
+            android:background="?attr/colorPrimaryVariant"
+            app:navigationIcon="@drawable/baseline_clear_24"
+            app:navigationIconTint="?colorPrimary"
+            app:navigationContentDescription="Back to Gallery Page"/>
+    </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="@dimen/_5sdp"
+        android:scrollbars="vertical"
         android:id="@+id/outerImageView"/>
-</FrameLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="No image"
+        android:textStyle="bold"
+        android:textColor="?colorPrimary"
+        android:textAppearance="?android:textAppearanceLarge"
+        android:id="@+id/textView"/>
+</LinearLayout>

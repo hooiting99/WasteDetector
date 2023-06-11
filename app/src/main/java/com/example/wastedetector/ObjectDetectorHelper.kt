@@ -9,9 +9,9 @@ import org.tensorflow.lite.task.vision.detector.Detection
 import org.tensorflow.lite.task.vision.detector.ObjectDetector
 
 class ObjectDetectorHelper(
-    var threshold: Float = 0.5f,
-    var numThreads: Int = 2,
-    var maxResults: Int = 3,
+    private var threshold: Float = 0.5f,
+    private var numThreads: Int = 2,
+    private var maxResults: Int = 3,
     val context: Context,
     val objectDetectorListener: DetectorListener?
 ) {
@@ -34,7 +34,7 @@ class ObjectDetectorHelper(
 
         optionsBuilder.setBaseOptions(baseOptionsBuilder.build())
 
-        val modelName ="model4.tflite"
+        val modelName ="model.tflite"
 
         try {
             objectDetector =
@@ -48,15 +48,11 @@ class ObjectDetectorHelper(
     }
 
     fun detect(image: Bitmap) {
-        if (objectDetector == null) {
-            setupObjectDetector()
-        }
 
 //        Convert the image to TensorImage for detection
         val tensorImage = TensorImage.fromBitmap(image)
 
         val results = objectDetector?.detect(tensorImage)
-        println(results)
         objectDetectorListener?.onResults(
             results,
             tensorImage.height,

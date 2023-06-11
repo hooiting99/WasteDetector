@@ -58,7 +58,6 @@ class RegisterActivity : AppCompatActivity() {
         val emailStr = email.text.toString()
         val passStr = password.text.toString()
         val confPassStr = confPass.text.toString()
-        val point = 0
 
         // User input validation
         if (nameStr.isEmpty() || emailStr.isEmpty() || passStr.isEmpty() || confPassStr.isEmpty()) {
@@ -88,7 +87,8 @@ class RegisterActivity : AppCompatActivity() {
                         val userRef = db.collection("users").document(userId.toString())
                         val userData = hashMapOf(
                             "username" to nameStr,
-                            "point" to point
+                            "point" to 0,
+                            "emission" to 0
                         )
                         userRef
                             .set(userData)

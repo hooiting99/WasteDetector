@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.*
 import android.graphics.drawable.BitmapDrawable
-import android.media.ExifInterface
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Bundle
@@ -18,6 +17,7 @@ import android.view.View
 import android.view.View.*
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.lifecycleScope
 import cn.pedant.SweetAlert.SweetAlertDialog
 import com.google.android.material.appbar.MaterialToolbar
@@ -35,6 +35,8 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
@@ -115,6 +117,7 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
         }
     }
 
+    @Deprecated("Deprecated in Java")
     @Suppress("DEPRECATION")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -129,7 +132,7 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
                 REQUEST_UPLOAD_IMAGE -> {
                     val imageUri = data?.data
                     val path = getRealPathFromURI(imageUri, this)
-                    Log.e(TAG, imageUri.toString())
+                    Log.d(TAG, imageUri.toString())
                     handleImage(path)
                 }
                 REQUEST_CROP_IMAGE -> {
@@ -298,7 +301,7 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
 
                     if (results.isNullOrEmpty()) {
                         Log.w(TAG, "No detection result")
-                        categoryView.text = "No waste detected"
+                        categoryView.text = buildString { append("No waste detected") }
                     } else {
                         // Print the results for checking
                         debugPrint(results, imageHeight, imageWidth)
@@ -380,9 +383,9 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
 
                             // Change the text of button accordingly
                             if (cate.toString().contains("Trash")) {
-                                recycleBtn.text = "Throw it"
+                                "Throw it".also { recycleBtn.text = it }
                             } else {
-                                recycleBtn.text = "Recycle it"
+                                "Recycle it".also { recycleBtn.text = it }
                             }
 
                             // Assume user recycle the detected item
@@ -485,6 +488,7 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
                 it.setCancelable(false)
                 it.setCanceledOnTouchOutside(false)
             }
+        btn.visibility = INVISIBLE
 
 //        Get the image display on the resultView
         val storeBitmap = (resultView.drawable as BitmapDrawable).bitmap
@@ -505,7 +509,7 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
             // Network is unavailable
             dialog.changeAlertType(SweetAlertDialog.ERROR_TYPE)
             dialog.titleText = "Network Unavailable"
-            contentTextView.text = "Please check your internet connection."
+            "Please check your internet connection.".also { contentTextView.text = it }
             btn.visibility = VISIBLE
         } else {
             val uploadTask = imageRef.putBytes(imageBytes)
@@ -532,7 +536,7 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
                                 userRef.get()
                                     .addOnSuccessListener { documentSnapshot ->
                                         var newPoint = 0
-                                        var newEmission = 0.0
+                                        var newEmission = BigDecimal(0)
                                         if (documentSnapshot.exists()) {
                                             if (documentSnapshot.contains("point")) {
                                                 // Retrieve the current value of the point
@@ -545,24 +549,21 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
                                             }
 
                                             if (documentSnapshot.contains("emission")) {
-                                                Log.d(TAG, "exist")
                                                 val emissionFactors = mapOf(
-                                                    "paper" to 0.0276,        // Emission factor for paper category
-                                                    "plastic" to 0.2,      // Emission factor for plastic category
-                                                    "cardboard" to 0.8,    // Emission factor for cardboard category
-                                                    "metal" to 4.0,        // Emission factor for metal category
-                                                    "glass" to 0.503         // Emission factor for glass category
+                                                    "paper" to 0.182,        // Emission factor for paper category
+                                                    "plastic" to 0.167,      // Emission factor for plastic category
+                                                    "cardboard" to 0.815,    // Emission factor for cardboard category
+                                                    "metal" to 1.1,        // Emission factor for metal category
+                                                    "glass" to 0.225         // Emission factor for glass category
                                                 )
 
-                                                val emissionFactor = emissionFactors[category.trim()] ?: 0.0
-                                                println("EmissionFactor: $emissionFactor")
+                                                val emissionFactor = BigDecimal(emissionFactors[category.trim()] ?: 0.0)
 
-                                                // Retrieve the current value of the point
-                                                val currentEmission = documentSnapshot.getLong("emission") ?: 0
+                                                // Retrieve the current value of the emission
+                                                val currentEmission = BigDecimal(documentSnapshot.getDouble("emission") ?: 0.0)
 
-                                                // Add one point for each waste recycled
-                                                newEmission = currentEmission + emissionFactor
-
+                                                // Add CO2e saved for each waste recycled
+                                                newEmission = currentEmission.add(emissionFactor).setScale(3, RoundingMode.HALF_UP)
                                             } else {
                                                 Log.e(TAG, "No field named emission")
                                             }
@@ -570,7 +571,7 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
                                             // Create a HashMap to represent the updated value
                                             val data = hashMapOf(
                                                 "point" to newPoint,
-                                                "emission" to newEmission
+                                                "emission" to newEmission.toDouble()
                                             )
 
                                             // Update the field value in Firestore
@@ -581,7 +582,7 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
 
                                                     dialog.changeAlertType(SweetAlertDialog.SUCCESS_TYPE)
                                                     dialog.titleText = "Congratulations!"
-                                                    contentTextView.text = "You have earned one point!"
+                                                    "You have earned one point!".also { contentTextView.text = it }
                                                     btn.visibility = VISIBLE
                                                     recycleBtn.visibility = INVISIBLE
                                                     uploadImage.visibility = VISIBLE
@@ -599,7 +600,7 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
                                         Log.e(TAG, "Cant retrieve the point", e)
                                         dialog.changeAlertType(SweetAlertDialog.ERROR_TYPE)
                                         dialog.titleText = "Opps..."
-                                        contentTextView.text = "Something went wrong! Try Again!"
+                                        "Something went wrong! Try Again!".also { contentTextView.text = it }
                                         btn.visibility = VISIBLE
                                     }
                             }
@@ -607,7 +608,7 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
                                 Log.e(TAG, "Error adding document", e)
                                 dialog.changeAlertType(SweetAlertDialog.ERROR_TYPE)
                                 dialog.titleText = "Opps..."
-                                contentTextView.text = "Something went wrong! Try Again!"
+                                "Something went wrong! Try Again!".also { contentTextView.text = it }
                                 btn.visibility = VISIBLE
                             }
                     }
@@ -619,7 +620,7 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
                 Log.w(TAG, "Error adding document", e)
                 dialog.changeAlertType(SweetAlertDialog.ERROR_TYPE)
                 dialog.titleText = "Opps..."
-                contentTextView.text = "Something went wrong! Try Again!"
+                "Something went wrong! Trery Again!".also { contentTextView.text = it }
                 btn.visibility = VISIBLE
             }
         }

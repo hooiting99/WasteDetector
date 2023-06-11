@@ -3,6 +3,7 @@ package com.example.wastedetector.fragment
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Bundle
+import android.text.method.ScrollingMovementMethod
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -118,8 +119,9 @@ class ProfileFragment : Fragment(), View.OnClickListener {
         loadingDialog = SweetAlertDialog(requireContext(), SweetAlertDialog.CUSTOM_IMAGE_TYPE)
         loadingDialog!!
             .setTitleText("How to earn point")
-            .setCustomImage(R.drawable.email)
+            .setCustomImage(R.drawable.earn_point)
             .setCustomView(customView)
+            .hideConfirmButton()
             .also {
                 it.setCancelable(false)
                 it.setCanceledOnTouchOutside(false)
@@ -127,18 +129,59 @@ class ProfileFragment : Fragment(), View.OnClickListener {
             .show()
 
         contentTextView?.textAlignment = View.TEXT_ALIGNMENT_VIEW_START
-        contentTextView?.textSize = 12F
-        contentTextView?.text = "In our app, you can earn points by recycling waste! Here's how:\n\n" +
-                "1. Start by detecting waste: Use the waste detection feature to identify different types of waste items.\n\n" +
-                "2. Check recyclability: Once you detect an item, our app will let you know if it's recyclable or not.\n\n" +
-                "3. Recycle and earn points: If the item is recyclable, you'll see a 'Recycle' button. Click on it to recycle the waste.\n\n" +
-                "4. Earn points: Each time you successfully recycle an item, you'll earn points. The more you recycle, the more points you can accumulate.\n\n" +
-                "5. Track your progress: Keep an eye on your points in the app. You can see your total points earned and use them to unlock rewards or participate in challenges.\n\n" +
-                "Remember, recycling helps protect the environment and reduces waste. So, start recycling today and earn points for your positive impact!"
+        contentTextView?.textSize = 14F
+        contentTextView?.text = buildString {
+            append("In our app, you can earn points by recycling waste! Here's how:\n\n")
+            append("1. Start by detecting waste: Use the waste detection feature to identify different types of waste items.\n\n")
+            append("2. Check recyclability: Once you detect an item, our app will let you know if it's recyclable or not.\n\n")
+            append("3. Recycle and earn points: If the item is recyclable, you'll see a 'Recycle' button. Click on it to recycle the waste.\n\n")
+            append("4. Earn points: Each time you successfully recycle an item, you'll earn points. The more you recycle, the more points you can accumulate.\n\n")
+            append("5. Track your progress: Keep an eye on your points in the app. You can see your total points earned and use them to unlock rewards or participate in challenges.\n\n")
+            append("Remember, recycling helps protect the environment and reduces waste. So, start recycling today and earn points for your positive impact!")
+        }
+        contentTextView?.movementMethod = ScrollingMovementMethod()
+        btn?.setOnClickListener {
+            loadingDialog?.dismissWithAnimation()
+        }
     }
 
     private fun displayCalMethod() {
-        TODO("Not yet implemented")
+        customView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_custom_layout, null)
+        val contentTextView = customView?.findViewById<TextView>(R.id.contentTextView)
+        val btn = customView?.findViewById<Button>(R.id.customBtn)
+        loadingDialog = SweetAlertDialog(requireContext(), SweetAlertDialog.CUSTOM_IMAGE_TYPE)
+        loadingDialog!!
+            .setTitleText("Carbon Emission")
+            .setCustomImage(R.drawable.carbon)
+            .setCustomView(customView)
+            .hideConfirmButton()
+            .also {
+                it.setCancelable(false)
+                it.setCanceledOnTouchOutside(false)
+            }
+            .show()
+
+        contentTextView?.textAlignment = View.TEXT_ALIGNMENT_VIEW_START
+        contentTextView?.textSize = 14F
+        contentTextView?.text = buildString {
+        append("The CO2e (carbon dioxide equivalent) value displayed is a estimation on the carbon footprint/emission that you can offset through recycling. " +
+                "It is calculated based on the weight of the recycled waste which measured in kg of CO2e. ")
+        append("The emission factor used in calculation assumes the following:\n\n")
+        append("- Cardboard:\nIt is assumed as e-commerce box that is 9 x 9 x 9 inches weighing 291g.\n\n")
+        append("- Glass:\nIt is assumed as glass bottle like wine bottle weighing 600 to 900g.\n\n")
+        append("- Paper:\nIt is assumed as a paper cup or piece of A4 paper weighing 60 to 80g.\n\n")
+        append("- Plastic:\nIt is assumed as a plastic bag average weighing 32.5g or 1.5ml bottles weighing 44 to 633g.\n\n")
+        append("- Metal:\nIt is assumed as aluminium/steel cans that weighing around 15g up to 425g.\n\n")
+        append("CO2e is a unit used to measure the impact of greenhouse gas emissions on the environment. ")
+        append("This value is just a reference for you to get an idea on how recycling reduce carbon emission.\n\n")
+        append("By recycling waste, you are contributing to the reduction of CO2e emissions. ")
+        append("Recycling helps conserve resources, reduce energy consumption, and minimize pollution.\n\n")
+    }
+
+        contentTextView?.movementMethod = ScrollingMovementMethod()
+        btn?.setOnClickListener {
+            loadingDialog?.dismissWithAnimation()
+        }
     }
 
     private fun sendEmailVerification() {
@@ -180,7 +223,6 @@ class ProfileFragment : Fragment(), View.OnClickListener {
             .show()
 
         contentTextView?.text = s
-        btn?.visibility = View.VISIBLE
         btn?.setOnClickListener {
             loadingDialog?.dismissWithAnimation()
         }
@@ -189,6 +231,7 @@ class ProfileFragment : Fragment(), View.OnClickListener {
     // Configure and Display the loading dialog
     private fun showLoadingDialog() {
         customView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_custom_layout, null)
+        val btn = customView?.findViewById<Button>(R.id.customBtn)
         loadingDialog = SweetAlertDialog(requireContext(), SweetAlertDialog.PROGRESS_TYPE)
         loadingDialog!!
             .setCustomView(customView)
@@ -199,6 +242,7 @@ class ProfileFragment : Fragment(), View.OnClickListener {
                 it.setCanceledOnTouchOutside(false)
             }
             .show()
+        btn?.visibility = View.INVISIBLE
     }
 
     private fun loadUserData() {
@@ -210,7 +254,7 @@ class ProfileFragment : Fragment(), View.OnClickListener {
                     val username = it.getString("username")
                     val email = currentUser.email
                     val point = it.getLong("point") ?: 0
-                    val emission = it.getDouble("emission")
+                    val emission = it.getDouble("emission") ?: 0
                     val level = floor(sqrt(point.toDouble() / 100)).toInt() + 1
                     val image: String = if (level<7) {
                         "profile$level"
@@ -223,10 +267,18 @@ class ProfileFragment : Fragment(), View.OnClickListener {
                     profileImage.setImageResource(res)
                     userName.text = username
                     userEmail.text = email
-                    userLevel.text = "Level $level"
-                    userPoint.text = "$point points"
-                    println("emission$emission")
-                    carbonEmission.text = "$emission kg CO2e saved"
+                    userLevel.text = buildString {
+                        append("Level ")
+                        append(level)
+                    }
+                    userPoint.text = buildString {
+                        append(point)
+                        append(" points")
+                    }
+                    carbonEmission.text = buildString {
+                        append(emission)
+                        append(" kg CO2e saved")
+                    }
 
                     loadRewards(point) // Display the rewards and status
                 } else {
@@ -238,15 +290,6 @@ class ProfileFragment : Fragment(), View.OnClickListener {
                 showErrorDialog("Something wrong! Try clear cache and reload!")
             }
     }
-
-//    private fun calEmission(): String {
-//        val categories = listOf("cardboard", "glass", "metal", "plastic", "paper")
-//
-//        for (category in categories) {
-//            val dbRef = userRef.collection(category)
-//        }
-//
-//    }
 
     private fun loadRewards(pt: Long?) {
 
@@ -280,8 +323,8 @@ class ProfileFragment : Fragment(), View.OnClickListener {
                             // Update the reward adapter when all rewards are processed
                             if (dataList.size == it.size()) {
                                 // Sort the reward list according to points
-                                dataList.sortBy { reward ->
-                                    reward.points
+                                dataList.sortBy { r ->
+                                    r.points
                                 }
                                 rewardsList.clear()
                                 rewardsList.addAll(dataList)

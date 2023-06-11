@@ -1,6 +1,5 @@
 package com.example.wastedetector
 
-import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
@@ -30,8 +29,6 @@ class CameraActivity : AppCompatActivity(), ObjectDetectorHelper.DetectorListene
     companion object {
         private const val TAG = "CameraActivity"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
-        private const val REQUEST_CODE_PERMISSIONS = 20
-        private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
     }
 
     private lateinit var  previewView: PreviewView

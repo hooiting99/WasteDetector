@@ -119,7 +119,6 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/_5sdp"
             android:gravity="center"
-            android:text="300kg CO2e saved"
             android:textColor="?colorOnSecondary"
             android:textStyle="bold"
             android:textAppearance="?android:textAppearanceMedium"
