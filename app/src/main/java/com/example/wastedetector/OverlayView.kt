@@ -1,17 +1,13 @@
 package com.example.wastedetector
 
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Rect
-import android.graphics.RectF
+import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
-import java.util.LinkedList
-import kotlin.math.max
 import org.tensorflow.lite.task.vision.detector.Detection
+import java.util.*
+import kotlin.math.max
 
 class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
 
@@ -60,7 +56,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
             // Create text to display alongside detected objects
             val drawableText =
                 result.categories[0].label + " " +
-                        String.format("%.2f", result.categories[0].score)
+                        String.format("%.2f", result.categories[0].score*100) + "%"
 
             // Draw rect behind display text
             textBackgroundPaint.getTextBounds(drawableText, 0, drawableText.length, bounds)

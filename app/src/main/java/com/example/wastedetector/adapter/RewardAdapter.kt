@@ -8,6 +8,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import cn.pedant.SweetAlert.SweetAlertDialog
 import com.bumptech.glide.Glide
 import com.example.wastedetector.R
 import com.example.wastedetector.fragment.Reward
@@ -45,7 +46,7 @@ class RewardAdapter(private val rewardsList: List<Reward>) :
         } else {
             holder.claimBtn.text = "Claim"
             holder.claimBtn.isEnabled = true
-            holder.claimBtn.setOnClickListener {
+            holder.claimBtn.setOnClickListener {v ->
                 val userId = Firebase.auth.currentUser?.uid
                 val db = FirebaseFirestore.getInstance()
                 val dbRef = db.collection("users").document(userId.toString()).collection("claimedRewards")
@@ -56,6 +57,24 @@ class RewardAdapter(private val rewardsList: List<Reward>) :
                 dbRef
                     .add(rewardID)
                     .addOnSuccessListener {
+                        val customView = LayoutInflater.from(v.context).inflate(R.layout.dialog_custom_layout, null)
+                        // Find the TextView in the custom layout
+                        val contentTextView = customView.findViewById<TextView>(R.id.contentTextView)
+                        val btn = customView.findViewById<Button>(R.id.customBtn)
+                        val dialog = SweetAlertDialog(v.context, SweetAlertDialog.SUCCESS_TYPE)
+                            .setCustomView(customView)
+                            .setTitleText("Congratulation")
+                            .hideConfirmButton()
+                            .also {
+                                it.setCancelable(false)
+                                it.setCanceledOnTouchOutside(false)
+                            }
+                        "Check your email for details of rewards redemption!".also { s->
+                            contentTextView.text = s }
+                        btn.setOnClickListener {
+                            dialog.dismissWithAnimation()
+                        }
+                        dialog.show()
                         Log.d(RegisterActivity.TAG, "Reward id successfully added!")
                     }
                     .addOnFailureListener { e ->

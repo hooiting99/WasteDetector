@@ -52,7 +52,7 @@ class ObjectDetectorHelper(
 //        Convert the image to TensorImage for detection
         val tensorImage = TensorImage.fromBitmap(image)
 
-        val results = objectDetector?.detect(tensorImage)
+        val results = objectDetector.detect(tensorImage)
         objectDetectorListener?.onResults(
             results,
             tensorImage.height,

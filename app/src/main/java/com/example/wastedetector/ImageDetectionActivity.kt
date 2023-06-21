@@ -301,7 +301,9 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
 
                     if (results.isNullOrEmpty()) {
                         Log.w(TAG, "No detection result")
-                        categoryView.text = buildString { append("No waste detected") }
+                        runOnUiThread {
+                            categoryView.text = buildString { append("No waste detected") }
+                        }
                     } else {
                         // Print the results for checking
                         debugPrint(results, imageHeight, imageWidth)
@@ -330,39 +332,40 @@ class ImageDetectionActivity : AppCompatActivity(), OnClickListener {
                                     "cardboard" -> {
                                         cate.append("Cardboard (Recyclable)\n")
                                         method.append("Cardboard is recyclable and has a lower environmental impact " +
-                                                "compared to other packaging materials." +
-                                                "Recycling cardboard saves energy and reduces carbon emissions. " +
+                                                "compared to other packaging materials. " +
+                                                "For each kg of cardboard recycled can reduces around 2.8 kg of carbon emissions. " +
                                                 "Flatten and remove non-recyclable elements, then place it in recycling bins or facilities.\n")
                                     }
                                     "glass" -> {
                                         cate.append("Glass (Recyclable)\n")
-                                        method.append("Glass is endlessly recyclable and has a low carbon footprint when recycled. " +
+                                        method.append("Glass is endlessly recyclable. " +
+                                                "It has around 40% to 60% lower carbon footprint when recycled. " +
                                                 "To recycle glass, separate it by color (clear, green, brown), " +
                                                 "remove any non-recyclable elements like metal caps, and place it in designated recycling bins.")
                                     }
                                     "metal" -> {
                                         cate.append("Metal (Recyclable)\n")
-                                        method.append("Metal recycling helps conserve natural resources and significantly reduces " +
-                                                "carbon emissions compared to primary metal production." +
+                                        method.append("Metal recycling helps conserve natural resources and " +
+                                                "significantly reduces carbon emissions by 80% to 90% compared to primary metal production. " +
                                                 "You can repurpose the metal items for creative DIY projects or functional use.")
                                     }
                                     "plastic" -> {
                                         cate.append("Plastic (Recyclable)\n")
                                         method.append("Plastics' production involves fossil fuel extraction, " +
-                                                "releasing greenhouse gases. Improper disposal leads to more emissions." +
+                                                "releasing greenhouse gases. Improper disposal leads to 37% more emissions. " +
                                                 "To recycle plastic, clean and sort them properly and rinsing out any residue. " +
                                                 "Then, deposit them in designated recycling bins or take them to local recycling centers.")
                                     }
                                     "paper" -> {
                                         cate.append("Paper (Recyclable)\n")
                                         method.append("Recycling paper is an eco-friendly choice that helps reduce deforestation and " +
-                                                "the carbon emissions associated with paper production. " +
+                                                "37% of carbon emissions associated with paper production. " +
                                                 "By separating paper waste and placing it in designated recycling bins or centers, " +
                                                 "you can contribute to the conservation of trees and energy resources.")
                                     }
                                     "trash" -> {
                                         cate.append("Trash (Non-Recyclable)\n")
-                                        method.append("Items that cannot be recycled and belong in the trash contribute to carbon emissions when disposed of improperly." +
+                                        method.append("Items that cannot be recycled and belong in the trash contribute to carbon emissions when disposed of improperly. " +
                                                 "Dispose of non-recyclable items in designated trash bins or follow local waste management guidelines " +
                                                 "to promote a cleaner and more sustainable environment.")
                                     }
